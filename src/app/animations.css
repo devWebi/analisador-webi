@@ -1,0 +1,120 @@
+/* --- Fundo Dinâmico e Textura --- */
+
+/* Define o fundo como um gradiente grande e prepara-o para a animação */
+.bg-animated {
+  background-size: 400% 400%; /* O tamanho grande permite que o gradiente se mova */
+  animation: gradientAnimation 15s ease infinite; /* Aplica a animação */
+}
+
+/* Cria uma textura de pontos subtil sobre o fundo */
+.bg-dots {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+  opacity: 0.5;
+}
+
+/* Define as cores do gradiente para o tema escuro */
+.dark .bg-animated {
+  background-image: linear-gradient(-45deg, #0d1117, #05080a, #1a202c, #0d1117);
+}
+
+/* Define as cores do gradiente para o tema claro */
+.light .bg-animated {
+  background-image: linear-gradient(-45deg, #f0f2f5, #dde4f0, #e2e8f0, #f0f2f5);
+}
+
+/* A animação que move a posição do fundo ao longo do tempo */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* --- Novo Loader Elegante --- */
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: inline-block;
+  border-top: 4px solid var(--text-primary); /* Parte estática do anel */
+  border-right: 4px solid transparent;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite; /* Animação de rotação */
+}
+/* Cria uma segunda camada no anel com a cor de destaque para um efeito de dois tons */
+.loader::after {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border-bottom: 4px solid var(--accent-color); /* Parte colorida do anel */
+  border-left: 4px solid transparent;
+}
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Animações de Transição de Ecrã --- */
+
+.animate-fade-in,
+.animate-fade-in-fast {
+  animation: fadeIn 0.8s ease-in-out;
+}
+.animate-fade-in-fast {
+  animation-duration: 0.5s;
+}
+
+/* Animação que faz os elementos aparecerem suavemente */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Efeitos de Interatividade (Hover) --- */
+
+/* Efeito de "flutuar" para os cards do relatório */
+.interactive-card {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+.interactive-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.2);
+}
+
+/* Efeitos de brilho e escala para o botão principal */
+.main-button {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.main-button:hover:not(:disabled) {
+  box-shadow: 0 0 25px -5px var(--accent-color);
+  transform: scale(1.03);
+}
+.main-button:active:not(:disabled) {
+  transform: scale(0.98);
+}

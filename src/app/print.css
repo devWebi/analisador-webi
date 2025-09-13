@@ -1,0 +1,72 @@
+/* Este CSS só é aplicado quando o utilizador tenta imprimir a página. */
+@media print {
+  /* Escondemos tudo o que tiver a classe 'no-print'. */
+  .no-print {
+    display: none !important;
+  }
+
+  /* --- A CORREÇÃO PRINCIPAL ESTÁ AQUI --- */
+  #report-container {
+    display: block !important;
+    /* Removemos 'position: absolute' para que o conteúdo possa fluir por várias páginas. */
+    position: static !important;
+    width: 100%;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Forçamos um fundo branco e texto preto para uma impressão limpa. */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Ajustamos os estilos dos componentes para ficarem bem no papel. */
+  .glass-pane {
+    background: #f9fafb !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid #e5e7eb !important;
+    /* Evita que as secções sejam cortadas entre páginas */
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span {
+    color: #000000 !important;
+    text-shadow: none !important;
+  }
+
+  /* Garantimos que a cor de destaque (laranja) seja impressa. */
+  h1[class*="accent-color"],
+  span[class*="accent-color"] {
+    color: #f17923 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Garantimos que as cores dos ícones de status sejam impressas */
+  .text-emerald-400 {
+    color: #34d399 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .text-amber-400 {
+    color: #fbbf24 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .text-red-400 {
+    color: #f87171 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
