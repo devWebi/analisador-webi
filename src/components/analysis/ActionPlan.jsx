@@ -1,68 +1,48 @@
-import React from "react";
-import { XCircleIcon, AlertTriangleIcon, CheckCircleIcon } from "../ui/Icons";
+import React from 'react';
 
-// Mapeamento para dar estilo a cada tipo de prioridade do plano de ação
-const priorityConfig = {
-  high: {
-    label: "Alta Prioridade",
-    icon: <XCircleIcon className="text-red-400" />,
-    bgColor: "bg-red-500/10",
-    borderColor: "border-red-500/30",
-  },
-  medium: {
-    label: "Média Prioridade",
-    icon: <AlertTriangleIcon className="text-amber-400" />,
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/30",
-  },
-  low: {
-    label: "Baixa Prioridade",
-    icon: <CheckCircleIcon className="text-sky-400" />,
-    bgColor: "bg-sky-500/10",
-    borderColor: "border-sky-500/30",
-  },
-};
-
-const ActionPlan = ({ items }) => {
-  // Se não houver itens no plano de ação, exibimos uma mensagem de sucesso.
-  if (!items || items.length === 0) {
-    return (
-      <div className="text-center p-8 bg-[var(--insight-bg)] rounded-lg">
-        <CheckCircleIcon className="mx-auto text-emerald-500 w-12 h-12" />
-        <h4 className="mt-4 text-xl font-bold text-[var(--text-primary)]">
-          Tudo em Ordem!
-        </h4>
-        <p className="text-[var(--text-secondary)]">
-          Não encontrámos itens de ação de alta prioridade.
-        </p>
-      </div>
-    );
-  }
-
-  // Se houver itens, mapeamo-los para exibir cada um.
+// A propriedade 'onNavigate' será a função que vem do page.js para mudar de tela.
+const ActionPlan = ({ onNavigate }) => {
   return (
-    <div className="space-y-4">
-      {items.map((item, index) => {
-        const config = priorityConfig[item.priority] || {};
-        return (
-          <div
-            key={index}
-            className={`p-4 rounded-lg border ${config.bgColor} ${config.borderColor}`}
+    // Usamos um fragmento para devolver os dois painéis como irmãos.
+    <>
+      <div className="text-center p-6 glass-pane flex flex-col items-center">
+        <h4 className="text-xl font-bold text-[var(--text-primary)]">
+          Dar o Próximo Passo:
+        </h4>
+        <p className="text-[var(--text-secondary)] mt-2 max-w-xl text-center text-sm">
+          Entre em contato conosco, e agendaremos uma consultoria personalizada
+          para discutir as melhores estratégias para o seu site. Clique abaixo
+          para iniciar o contato.
+        </p>
+        <div className="mt-4">
+          <a
+            href="https://webi.com.br/contato/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="main-button flex items-center justify-center text-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-xl"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">{config.icon}</div>
-              <h4 className="font-bold text-[var(--text-primary)]">
-                {config.label}
-              </h4>
-            </div>
-            <p className="mt-2 ml-9 text-[var(--text-secondary)]">
-              {item.text}
-            </p>
-          </div>
-        );
-      })}
-    </div>
+            Iniciar Contato
+          </a>
+        </div>
+      </div>
+
+      <div className="text-center p-6 glass-pane flex flex-col items-center">
+        <h4 className="text-xl font-bold text-[var(--text-primary)]">
+          Fazer análise de UI/UX:
+        </h4>
+        <div className="mt-4">
+          {/* Este botão agora chama a função de navegação que recebemos como propriedade */}
+          <button
+            onClick={onNavigate}
+            className="main-button flex items-center justify-center text-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-xl"
+          >
+            Fazer Análise
+          </button>
+        </div>
+      </div>
+    </>
   );
 };
 
 export default ActionPlan;
+

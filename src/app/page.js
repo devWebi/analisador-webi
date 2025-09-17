@@ -54,7 +54,6 @@ export default function App() {
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  // A função handleAnalyze agora também recebe a estratégia selecionada
   const handleAnalyze = async (url, selectedStrategy) => {
     setAppState("loading");
     setErrorMessage("");
@@ -62,16 +61,34 @@ export default function App() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Enviamos a URL e a estratégia para o backend
         body: JSON.stringify({ url, strategy: selectedStrategy }),
       });
-      const data = await response.json();
+
+      // --- NOVO CÓDIGO DE DEPURAÇÃO ---
+      // Primeiro, verificamos se a resposta da rede foi bem-sucedida (status 2xx)
       if (!response.ok) {
-        throw new Error(data.message || "Ocorreu um erro na análise.");
+        // Se não foi, tentamos ler a resposta como texto, pois pode ser um erro HTML
+        const errorText = await response.text();
+        console.error("Falha na resposta da API. Status:", response.status);
+        console.error("Corpo do erro (não-JSON):", errorText);
+        // Lançamos um erro mais descritivo
+        throw new Error(
+          `O servidor respondeu com um erro: ${response.status}. Verifique o console para mais detalhes.`
+        );
       }
+
+      // Só tentamos converter para JSON se a resposta for 'ok'
+      const data = await response.json();
+      console.log(
+        "PASSO 2 - DADOS RECEBIDOS NO NAVEGADOR (JSON VÁLIDO):",
+        data
+      );
+
       setReportData(data);
       setAppState("report");
     } catch (error) {
+      // Agora o catch vai pegar nosso erro mais detalhado
+      console.error("ERRO FINAL CAPTURADO PELO CATCH:", error);
       setErrorMessage(error.message);
       setAppState("error");
     }
