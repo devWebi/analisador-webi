@@ -5,10 +5,10 @@ import "./animations.css";
 import HomePage from "@/components/analysis/HomePage";
 import LoadingPage from "@/components/analysis/LoadingPage";
 import ReportPage from "@/components/analysis/ReportPage";
+import UiUxAnalysisPage from "@/components/analysis/UiUxAnalysisPage";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { XCircleIcon } from "@/components/ui/Icons";
 
-// O componente de estilos permanece o mesmo.
 const ThemeStyles = () => (
   <style jsx="true" global="true">{`
     :root {
@@ -37,6 +37,18 @@ const ThemeStyles = () => (
       border: 1px solid var(--glass-border);
       border-radius: 1.5rem;
     }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #fff !important;
+      }
+      .printable {
+        color: #000 !important;
+        background: #fff !important;
+      }
+    }
   `}</style>
 );
 
@@ -45,8 +57,10 @@ export default function App() {
   const [appState, setAppState] = useState("home");
   const [reportData, setReportData] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  // Adicionamos um novo estado para controlar a estratégia (mobile/desktop)
   const [strategy, setStrategy] = useState("mobile");
+  // --- NOVO ESTADO PARA GUARDAR OS DADOS DA ANÁLISE DE UI/UX ---
+  const [uiUxAnalysisData, setUiUxAnalysisData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     document.body.className = theme;
@@ -55,56 +69,100 @@ export default function App() {
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   const handleAnalyze = async (url, selectedStrategy) => {
+    setIsLoading(true);
     setAppState("loading");
     setErrorMessage("");
+    // --- LIMPAMOS OS DADOS ANTERIORES PARA NÃO MOSTRAR UM RELATÓRIO ANTIGO ---
+    setUiUxAnalysisData(null);
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, strategy: selectedStrategy }),
       });
-
-      // --- NOVO CÓDIGO DE DEPURAÇÃO ---
-      // Primeiro, verificamos se a resposta da rede foi bem-sucedida (status 2xx)
       if (!response.ok) {
-        // Se não foi, tentamos ler a resposta como texto, pois pode ser um erro HTML
         const errorText = await response.text();
-        console.error("Falha na resposta da API. Status:", response.status);
-        console.error("Corpo do erro (não-JSON):", errorText);
-        // Lançamos um erro mais descritivo
         throw new Error(
-          `O servidor respondeu com um erro: ${response.status}. Verifique o console para mais detalhes.`
+          `O servidor respondeu com um erro: ${response.status}. Detalhes: ${errorText}`
         );
       }
-
-      // Só tentamos converter para JSON se a resposta for 'ok'
       const data = await response.json();
-      console.log(
-        "PASSO 2 - DADOS RECEBIDOS NO NAVEGADOR (JSON VÁLIDO):",
-        data
-      );
-
       setReportData(data);
       setAppState("report");
     } catch (error) {
-      // Agora o catch vai pegar nosso erro mais detalhado
       console.error("ERRO FINAL CAPTURADO PELO CATCH:", error);
       setErrorMessage(error.message);
       setAppState("error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- NOVA FUNÇÃO PARA GERIR A ANÁLISE DE UI/UX ---
+  const handleUiUxAnalyze = async (url) => {
+    setIsLoading(true);
+    setErrorMessage("");
+    setUiUxAnalysisData(null);
+    try {
+      const response = await fetch("/api/analyze-uiux", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Ocorreu um erro desconhecido.");
+      }
+      setUiUxAnalysisData({ ...data, analyzedUrl: url }); // Guardamos a URL também
+    } catch (err) {
+      setErrorMessage(
+        err.message || "Não foi possível conectar ao servidor de análise."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleReset = () => {
     setAppState("home");
     setReportData(null);
+    setUiUxAnalysisData(null);
+  };
+
+  const handleNavigateToUiUx = () => {
+    setAppState("uiUxAnalysis");
+  };
+
+  const handleGoBackToReport = () => {
+    // Apenas mudamos o estado, os dados de ambos os relatórios são mantidos.
+    setAppState("report");
   };
 
   const renderContent = () => {
+    if (isLoading && appState !== "report" && appState !== "uiUxAnalysis") {
+      return <LoadingPage />;
+    }
+
     switch (appState) {
-      case "loading":
-        return <LoadingPage />;
       case "report":
-        return <ReportPage data={reportData} onReset={handleReset} />;
+        return (
+          <ReportPage
+            data={reportData}
+            onReset={handleReset}
+            onNavigateToUiUx={handleNavigateToUiUx}
+          />
+        );
+      case "uiUxAnalysis":
+        return (
+          <UiUxAnalysisPage
+            // --- PASSAMOS OS DADOS E FUNÇÕES PARA O COMPONENTE ---
+            onAnalyze={handleUiUxAnalyze}
+            analysisData={uiUxAnalysisData}
+            isLoading={isLoading}
+            error={errorMessage}
+            onGoBack={handleGoBackToReport}
+          />
+        );
       case "error":
         return (
           <div className="text-center z-10 animate-fade-in">
@@ -123,10 +181,9 @@ export default function App() {
         );
       default:
         return (
-          // Passamos o estado da estratégia e a função para o alterar para a HomePage
           <HomePage
             onAnalyze={handleAnalyze}
-            isLoading={appState === "loading"}
+            isLoading={isLoading}
             strategy={strategy}
             setStrategy={setStrategy}
           />

@@ -1,31 +1,22 @@
 import React from "react";
-// Reutilizamos os nossos ícones existentes para manter a consistência visual.
-import { XCircleIcon, AlertTriangleIcon } from "./Icons";
+import { AlertTriangleIcon } from "./Icons"; // Usamos um ícone para dar destaque
 
-// Este componente exibe uma linha para cada problema de acessibilidade encontrado.
-// A propriedade 'type' irá determinar se mostramos um ícone de erro ou de alerta.
-const AccessibilityIssue = ({ type, description, count }) => {
-  const isError = type === "error";
-
-  // Escolhemos o ícone e a cor com base no tipo de problema.
-  const icon = isError ? (
-    <XCircleIcon className="text-red-400" />
-  ) : (
-    <AlertTriangleIcon className="text-amber-400" />
-  );
-
-  const countColor = isError ? "text-red-400" : "text-amber-400";
-
+/**
+ * Um componente para exibir um único problema de acessibilidade.
+ * @param {{issue: {title: string, description: string}}} props - As propriedades do componente.
+ * @returns {JSX.Element}
+ */
+const AccessibilityIssue = ({ issue }) => {
   return (
-    <div className="flex items-start gap-4 p-3 bg-[var(--insight-bg)] rounded-lg">
-      <div className="flex-shrink-0 w-6 h-6 mt-1">{icon}</div>
-      <div className="flex-grow">
-        <p className="font-semibold text-[var(--text-primary)]">
-          {description}
-        </p>
+    <div className="glass-pane p-4 rounded-lg flex items-start gap-4">
+      <div className="pt-1">
+        <AlertTriangleIcon className="w-5 h-5 text-amber-400" />
       </div>
-      <div className={`flex-shrink-0 font-bold text-lg ${countColor}`}>
-        {count}
+      <div>
+        <h4 className="font-bold text-[var(--text-primary)]">{issue.title}</h4>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
+          {issue.description}
+        </p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 // A propriedade 'onNavigate' será a função que vem do page.js para mudar de tela.
 const ActionPlan = ({ onNavigate }) => {
@@ -45,4 +45,3 @@ const ActionPlan = ({ onNavigate }) => {
 };
 
 export default ActionPlan;
-

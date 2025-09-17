@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ScoreGauge from "./ScoreGauge";
 import ActionPlan from "./ActionPlan";
 import OpportunityItem from "./OpportunityItem";
-import PerformanceSummary from "./PerformanceSummary"; // 1. Importamos o nosso novo painel
+import PerformanceSummary from "./PerformanceSummary";
 import { DownloadIcon } from "../ui/Icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,12 +14,10 @@ const handlePrint = () => {
 const GeminiReport = ({ text }) => {
   if (!text) return null;
 
-  // Separa a análise principal do plano de ação
   const [mainAnalysis, actionPlan] = text.split("### Plano de Ação Priorizado");
 
   return (
     <div>
-      {/* Seção 1: Análise Principal */}
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -94,7 +92,8 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
   );
 };
 
-const ReportPage = ({ data, onReset }) => {
+// 1. Adicionamos 'onNavigateToUiUx' à lista de props que o componente recebe.
+const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
       <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 no-print">
@@ -127,7 +126,6 @@ const ReportPage = ({ data, onReset }) => {
       </header>
 
       <div id="report-container" className="p-8">
-        {/* 3. Adicionamos o novo painel de performance aqui, no topo do relatório */}
         <PerformanceSummary metrics={data.detailedMetrics} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -153,7 +151,11 @@ const ReportPage = ({ data, onReset }) => {
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
                 Você Também Pode:
               </h2>
-              <ActionPlan items={data.actionPlan} />
+              {/* 2. Passamos a função recebida para o componente ActionPlan. */}
+              <ActionPlan
+                items={data.actionPlan}
+                onNavigate={onNavigateToUiUx}
+              />
             </section>
           </div>
 
