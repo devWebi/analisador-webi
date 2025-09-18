@@ -97,31 +97,42 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
       <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 no-print">
-        <div>
-          <p className="text-[var(--text-secondary)] flex items-center gap-2">
-            Relatório de Análise:{" "}
-            <span className="capitalize font-bold text-[var(--text-primary)] bg-white/10 px-2 py-0.5 rounded-md">
-              {data.strategy}
-            </span>
-          </p>
-          <h1 className="text-4xl font-bold text-[var(--accent-color)] break-all">
-            {data.url}
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onReset}
-            className="px-6 py-2 border-2 border-[var(--glass-border)] text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
-          >
-            Analisar Outra URL
-          </button>
-          <button
-            id="download-button"
-            onClick={handlePrint}
-            className="main-button flex items-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-lg h-full"
-          >
-            <DownloadIcon /> Download PDF
-          </button>
+        <div className="flex items-center gap-6">
+          <img
+            src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
+            alt="Logotipo da Agência Webi"
+            className="h-32 w-auto"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = "none";
+            }}
+          />
+          <div>
+            <p className="text-[var(--text-secondary)] flex items-center gap-2">
+              Relatório de Análise:{" "}
+              <span className="capitalize font-bold text-[var(--text-primary)] bg-white/10 px-2 py-0.5 rounded-md">
+                {data.strategy}
+              </span>
+            </p>
+            <h1 className="text-3xl font-bold text-[var(--accent-color)] break-all">
+              {data.url}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onReset}
+              className="px-6 py-2 border-2 border-[var(--glass-border)] text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
+            >
+              Analisar Outra URL
+            </button>
+            <button
+              id="download-button"
+              onClick={handlePrint}
+              className="main-button flex items-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-lg h-full"
+            >
+              <DownloadIcon /> Download PDF
+            </button>
+          </div>
         </div>
       </header>
 

@@ -9,7 +9,7 @@ import {
   PenSquareIcon,
   CrosshairIcon,
   RocketIcon,
-  DownloadIcon, // --- IMPORTAMOS O ÍCONE DE DOWNLOAD ---
+  DownloadIcon,
 } from "@/components/ui/Icons";
 
 // --- Os componentes internos (SeverityBadge, OverallScore, etc.) permanecem os mesmos ---
@@ -154,30 +154,40 @@ const UiUxAnalysisPage = ({
 
     return (
       <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-        {/* --- O CABEÇALHO AGORA TEM A CLASSE "no-print" --- */}
         <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 no-print">
-          <div>
-            <p className="text-[var(--text-secondary)]">
-              Relatório de Análise Estratégica
-            </p>
-            <h1 className="text-4xl font-bold text-[var(--accent-color)] break-all">
-              {analysisData.analyzedUrl}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* --- NOVO BOTÃO DE DOWNLOAD --- */}
-            <button
-              onClick={handlePrint}
-              className="main-button flex items-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-lg h-full"
-            >
-              <DownloadIcon /> Download PDF
-            </button>
-            <button
-              onClick={onGoBack}
-              className="px-6 py-2 border-2 border-[var(--glass-border)] text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
-            >
-              <ArrowLeftIcon /> Voltar
-            </button>
+          {/* --- LOGOTIPO ADICIONADO AQUI --- */}
+          <div className="flex items-center gap-6">
+            <img
+              src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
+              alt="Logotipo da Agência Webi"
+              className="h-38 w-auto"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = "none";
+              }}
+            />
+            <div>
+              <p className="text-[var(--text-secondary)]">
+                Relatório de Análise Estratégica
+              </p>
+              <h1 className="text-3xl font-bold text-[var(--accent-color)] break-all">
+                {analysisData.analyzedUrl}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrint}
+                className="main-button flex items-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-lg h-full"
+              >
+                <DownloadIcon /> Download PDF
+              </button>
+              <button
+                onClick={onGoBack}
+                className="flex items-center gap-2 px-4 py-2 border-2 border-[var(--glass-border)] text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
+              >
+                <ArrowLeftIcon /> Voltar
+              </button>
+            </div>
           </div>
         </header>
 
@@ -281,6 +291,15 @@ const UiUxAnalysisPage = ({
         <ArrowLeftIcon />
         Voltar
       </button>
+      <img
+        src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
+        alt="Logotipo da Agência Webi"
+        className="h-20 md:h-52 w-auto mx-auto mb-10" // Classes para torná-lo grande, centrado e com margem
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.style.display = "none";
+        }}
+      />
       <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text-primary)] pt-12">
         Análise Estratégica de UI/UX
       </h1>

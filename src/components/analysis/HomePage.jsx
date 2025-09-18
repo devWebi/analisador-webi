@@ -1,20 +1,27 @@
 import React, { useState } from "react";
 import { SearchIcon } from "../ui/Icons";
-import StrategyToggle from "../ui/StrategyToggle"; // Importamos o nosso novo componente
+import StrategyToggle from "../ui/StrategyToggle";
 
-// A HomePage agora precisa de receber o estado da estratégia (strategy)
-// e a função para o alterar (setStrategy) que vêm da página principal.
 const HomePage = ({ onAnalyze, isLoading, strategy, setStrategy }) => {
   const [url, setUrl] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Quando o formulário é submetido, agora também passamos a estratégia selecionada.
     if (url && !isLoading) onAnalyze(url, strategy);
   };
 
   return (
     <div className="w-full max-w-3xl text-center z-10 animate-fade-in">
+      <img
+        src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
+        alt="Logotipo da Agência Webi"
+        className="h-20 md:h-48 w-auto mx-auto mb-10" // Classes para torná-lo grande, centrado e com margem
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.style.display = "none";
+        }}
+      />
+
       <h1
         className="text-5xl md:text-7xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tighter"
         style={{ textShadow: "0 0 30px rgba(0,0,0,0.5)" }}
@@ -30,7 +37,6 @@ const HomePage = ({ onAnalyze, isLoading, strategy, setStrategy }) => {
         elevar seu projeto.
       </p>
 
-      {/* Adicionamos o seletor de estratégia aqui, antes do formulário. */}
       <StrategyToggle strategy={strategy} setStrategy={setStrategy} />
 
       <form

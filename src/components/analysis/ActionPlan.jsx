@@ -26,7 +26,7 @@ const ActionPlan = ({ onNavigate }) => {
         </div>
       </div>
 
-      <div className="text-center p-6 glass-pane flex flex-col items-center">
+      <div className="text-center mt-6 p-6 glass-pane flex flex-col items-center">
         <h4 className="text-xl font-bold text-[var(--text-primary)]">
           Fazer análise de UI/UX:
         </h4>

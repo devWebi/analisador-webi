@@ -26,11 +26,11 @@ const ScoreGauge = ({ score, title, onClick, isClickable = false }) => {
       <p className="font-semibold text-[var(--text-secondary)] uppercase tracking-widest text-sm mb-2">
         {title}
       </p>
-      <div className="relative w-36 h-36">
+      <div className="relative w-32 h-32">
         <svg className="w-full h-full" viewBox="0 0 120 120">
           <circle
             strokeWidth="10"
-            stroke="rgba(128, 128, 128, 0.2)"
+            stroke="rgba(128, 128, 128, 0.7)"
             fill="transparent"
             r="55"
             cx="60"

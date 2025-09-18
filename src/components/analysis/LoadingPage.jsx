@@ -4,7 +4,7 @@ const LoadingPage = () => {
   const messages = [
     "Invocando robôs de análise...",
     "Medindo a velocidade da luz...",
-    "Consultando oráculos do SEO...",
+    "Consultando os mestres do conhecimento...",
     "Compilando o relatório de poder...",
   ];
   const [message, setMessage] = useState(messages[0]);
