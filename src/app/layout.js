@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./print.css";
+import Script from "next/script";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,10 +21,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt">
-      <head></head>
+    <html lang="pt-br">
+      <body className={`${geistSans.variable} antialiased`}>
+        {children}
 
-      <body className={`${geistSans.variable} antialiased`}>{children}</body>
+        {/* 2. O seu código de monitoramento foi adicionado aqui */}
+        <Script
+          id="rdstation-monitoring-script"
+          strategy="afterInteractive"
+          src="https://d335luupugsy2.cloudfront.net/js/loader-scripts/dfeb70ee-bfce-4e09-90ce-4303137b6f66-loader.js"
+        />
+      </body>
     </html>
   );
 }
