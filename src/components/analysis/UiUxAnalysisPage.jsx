@@ -102,7 +102,6 @@ const ReportSection = ({ title, icon, children }) => (
   </section>
 );
 
-// --- O COMPONENTE PRINCIPAL AGORA RECEBE OS DADOS VIA PROPS ---
 const UiUxAnalysisPage = ({
   onAnalyze,
   analysisData,
@@ -113,13 +112,11 @@ const UiUxAnalysisPage = ({
   const [url, setUrl] = useState("");
   const [activeTab, setActiveTab] = useState("heuristic");
 
-  // --- NOVA FUNÇÃO PARA GERIR A IMPRESSÃO ---
   const handlePrint = () => {
     window.print();
   };
 
   useEffect(() => {
-    // Quando o componente carrega, preenche a URL se uma análise já existir
     if (analysisData?.analyzedUrl) {
       setUrl(analysisData.analyzedUrl);
     }
@@ -132,7 +129,13 @@ const UiUxAnalysisPage = ({
     onAnalyze(url);
   };
 
-  // --- RENDERIZAÇÃO DO DASHBOARD DE ANÁLISE ---
+  // --- 1. FUNÇÃO PARA AUTO-CORRIGIR A URL ADICIONADA ---
+  const handleUrlBlur = () => {
+    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+      setUrl(`https://${url}`);
+    }
+  };
+
   if (geminiAnalysis) {
     const TABS = {
       heuristic: {
@@ -154,44 +157,43 @@ const UiUxAnalysisPage = ({
 
     return (
       <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-        <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 no-print">
-          {/* --- LOGOTIPO ADICIONADO AQUI --- */}
-          <div className="flex items-center gap-6">
+        {/* --- 2. CABEÇALHO COM RESPONSIVIDADE CORRIGIDA --- */}
+        <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 no-print">
+          <div className="flex items-center gap-4 w-full md:w-auto">
             <img
               src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
               alt="Logotipo da Agência Webi"
-              className="h-38 w-auto"
+              className="h-12 sm:h-16 w-auto flex-shrink-0"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.style.display = "none";
               }}
             />
             <div>
-              <p className="text-[var(--text-secondary)]">
+              <p className="text-sm text-[var(--text-secondary)]">
                 Relatório de Análise Estratégica
               </p>
-              <h1 className="text-3xl font-bold text-[var(--accent-color)] break-all">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--accent-color)] break-all">
                 {analysisData.analyzedUrl}
               </h1>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrint}
-                className="main-button flex items-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-lg h-full"
-              >
-                <DownloadIcon /> Download PDF
-              </button>
-              <button
-                onClick={onGoBack}
-                className="flex items-center gap-2 px-4 py-2 border-2 border-[var(--glass-border)] text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
-              >
-                <ArrowLeftIcon /> Voltar
-              </button>
-            </div>
+          </div>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <button
+              onClick={handlePrint}
+              className="flex-1 md:flex-none main-button flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent-color)] text-black text-sm font-bold rounded-lg h-full"
+            >
+              <DownloadIcon /> Download PDF
+            </button>
+            <button
+              onClick={onGoBack}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border-2 border-[var(--glass-border)] text-sm text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
+            >
+              <ArrowLeftIcon /> Voltar
+            </button>
           </div>
         </header>
 
-        {/* O resto da renderização do relatório permanece o mesmo */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 printable">
           <aside className="lg:col-span-1 flex flex-col gap-8">
             <OverallScore
@@ -241,12 +243,12 @@ const UiUxAnalysisPage = ({
           <main className="lg:col-span-2 space-y-8">
             <div>
               <div className="border-b-2 border-[var(--glass-border)] mb-4">
-                <nav className="-mb-0.5 flex space-x-6">
+                <nav className="-mb-0.5 flex space-x-6 overflow-x-auto">
                   {Object.keys(TABS).map((tabKey) => (
                     <button
                       key={tabKey}
                       onClick={() => setActiveTab(tabKey)}
-                      className={`flex items-center gap-2 py-4 px-1 inline-flex text-sm font-medium ${
+                      className={`flex-shrink-0 flex items-center gap-2 py-4 px-1 inline-flex text-sm font-medium ${
                         activeTab === tabKey
                           ? "border-b-2 border-[var(--accent-color)] text-[var(--accent-color)]"
                           : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
@@ -276,12 +278,10 @@ const UiUxAnalysisPage = ({
     );
   }
 
-  // Se está a carregar, mostramos a página de loading
   if (isLoading) {
     return <LoadingPage />;
   }
 
-  // --- RENDERIZAÇÃO DA PÁGINA INICIAL ---
   return (
     <div className="w-full max-w-2xl text-center z-10 animate-fade-in-fast p-4 relative">
       <button
@@ -294,7 +294,7 @@ const UiUxAnalysisPage = ({
       <img
         src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
         alt="Logotipo da Agência Webi"
-        className="h-20 md:h-52 w-auto mx-auto mb-10" // Classes para torná-lo grande, centrado e com margem
+        className="h-20 md:h-52 w-auto mx-auto mb-10"
         onError={(e) => {
           e.target.onerror = null;
           e.target.style.display = "none";
@@ -317,7 +317,8 @@ const UiUxAnalysisPage = ({
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://exemplo.com.br"
+            onBlur={handleUrlBlur} // A função de auto-correção é chamada aqui
+            placeholder="exemplo.com.br" // Placeholder atualizado
             className="w-full pl-12 pr-4 py-4 text-lg bg-[var(--input-bg)] text-[var(--text-primary)] border-2 border-transparent focus:border-[var(--accent-color)] focus:outline-none rounded-xl transition-all duration-300"
           />
         </div>

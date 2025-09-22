@@ -29,7 +29,8 @@ const GeminiReport = ({ text }) => {
           ),
           p: ({ node, ...props }) => (
             <p
-              className="text-[var(--text-secondary)] mb-4 leading-relaxed"
+              // Adicionada a classe break-words para garantir a quebra de linha
+              className="text-[var(--text-secondary)] mb-4 leading-relaxed break-words"
               {...props}
             />
           ),
@@ -62,7 +63,7 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
         className="w-full p-4 flex justify-between items-center text-left hover:bg-white/5 transition"
       >
         <div className="flex items-center gap-3">
-          <h3 className="text-xl font-bold text-[var(--text-primary)]">
+          <h3 className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
             {title}
           </h3>
           {count > 0 && (
@@ -84,7 +85,8 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
           isOpen ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="p-4 border-t border-[var(--glass-border)]">
+        {/* Adicionada a classe break-words ao contentor do texto */}
+        <div className="p-4 border-t border-[var(--glass-border)] break-words">
           {children}
         </div>
       </div>
@@ -92,51 +94,54 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
   );
 };
 
-// 1. Adicionamos 'onNavigateToUiUx' à lista de props que o componente recebe.
 const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-      <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4 no-print">
-        <div className="flex items-center gap-6">
+      {/* --- CABEÇALHO TOTALMENTE RECONSTRUÍDO PARA SER RESPONSIVO --- */}
+      <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 no-print">
+        {/* Bloco do Logotipo e Título */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
           <img
             src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
             alt="Logotipo da Agência Webi"
-            className="h-32 w-auto"
+            className="h-12 sm:h-16 w-auto flex-shrink-0" // Tamanho do logo ajustado
             onError={(e) => {
               e.target.onerror = null;
               e.target.style.display = "none";
             }}
           />
           <div>
-            <p className="text-[var(--text-secondary)] flex items-center gap-2">
+            <p className="text-sm text-[var(--text-secondary)] flex items-center gap-2">
               Relatório de Análise:{" "}
               <span className="capitalize font-bold text-[var(--text-primary)] bg-white/10 px-2 py-0.5 rounded-md">
                 {data.strategy}
               </span>
             </p>
-            <h1 className="text-3xl font-bold text-[var(--accent-color)] break-all">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--accent-color)] break-all">
               {data.url}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onReset}
-              className="px-6 py-2 border-2 border-[var(--glass-border)] text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
-            >
-              Analisar Outra URL
-            </button>
-            <button
-              id="download-button"
-              onClick={handlePrint}
-              className="main-button flex items-center gap-2 px-6 py-2 bg-[var(--accent-color)] text-black font-bold rounded-lg h-full"
-            >
-              <DownloadIcon /> Download PDF
-            </button>
-          </div>
+        </div>
+
+        {/* Bloco dos Botões */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <button
+            onClick={onReset}
+            className="flex-1 md:flex-none px-4 py-2 border-2 border-[var(--glass-border)] text-sm text-[var(--text-secondary)] rounded-lg hover:bg-white/5 transition h-full"
+          >
+            Analisar Outra URL
+          </button>
+          <button
+            id="download-button"
+            onClick={handlePrint}
+            className="flex-1 md:flex-none main-button flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent-color)] text-black text-sm font-bold rounded-lg h-full"
+          >
+            <DownloadIcon /> Download PDF
+          </button>
         </div>
       </header>
 
-      <div id="report-container" className="p-8">
+      <div id="report-container" className="p-0 sm:p-8">
         <PerformanceSummary metrics={data.detailedMetrics} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -162,7 +167,6 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
                 Você Também Pode:
               </h2>
-              {/* 2. Passamos a função recebida para o componente ActionPlan. */}
               <ActionPlan
                 items={data.actionPlan}
                 onNavigate={onNavigateToUiUx}
