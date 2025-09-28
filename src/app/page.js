@@ -53,18 +53,34 @@ const ThemeStyles = () => (
 );
 
 export default function App() {
-  const [theme, setTheme] = useState("dark");
+  // O estado inicial agora é 'null' para que possamos detetá-lo
+  const [theme, setTheme] = useState(null);
   const [appState, setAppState] = useState("home");
   const [reportData, setReportData] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [strategy, setStrategy] = useState("mobile");
-  // --- NOVO ESTADO PARA GUARDAR OS DADOS DA ANÁLISE DE UI/UX ---
   const [uiUxAnalysisData, setUiUxAnalysisData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // --- NOVO CÓDIGO PARA DETETAR O TEMA DO SISTEMA ---
   useEffect(() => {
-    document.body.className = theme;
+    // Esta verificação só é feita na primeira vez que o componente carrega (quando o tema é null)
+    if (theme === null) {
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        setTheme("dark");
+      } else {
+        setTheme("light");
+      }
+    }
+    // Uma vez definido, o tema é aplicado ao corpo do documento
+    if (theme) {
+      document.body.className = theme;
+    }
   }, [theme]);
+  // --------------------------------------------------
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
@@ -72,7 +88,6 @@ export default function App() {
     setIsLoading(true);
     setAppState("loading");
     setErrorMessage("");
-    // --- LIMPAMOS OS DADOS ANTERIORES PARA NÃO MOSTRAR UM RELATÓRIO ANTIGO ---
     setUiUxAnalysisData(null);
     try {
       const response = await fetch("/api/analyze", {
@@ -98,7 +113,6 @@ export default function App() {
     }
   };
 
-  // --- NOVA FUNÇÃO PARA GERIR A ANÁLISE DE UI/UX ---
   const handleUiUxAnalyze = async (url) => {
     setIsLoading(true);
     setErrorMessage("");
@@ -113,7 +127,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error(data.error || "Ocorreu um erro desconhecido.");
       }
-      setUiUxAnalysisData({ ...data, analyzedUrl: url }); // Guardamos a URL também
+      setUiUxAnalysisData({ ...data, analyzedUrl: url });
     } catch (err) {
       setErrorMessage(
         err.message || "Não foi possível conectar ao servidor de análise."
@@ -134,12 +148,15 @@ export default function App() {
   };
 
   const handleGoBackToReport = () => {
-    // Apenas mudamos o estado, os dados de ambos os relatórios são mantidos.
     setAppState("report");
   };
 
   const renderContent = () => {
-    if (isLoading && appState !== "report" && appState !== "uiUxAnalysis") {
+    if (
+      (isLoading && appState !== "report" && appState !== "uiUxAnalysis") ||
+      theme === null
+    ) {
+      // Também mostra o ecrã de carregamento enquanto o tema está a ser detetado
       return <LoadingPage />;
     }
 
@@ -155,7 +172,6 @@ export default function App() {
       case "uiUxAnalysis":
         return (
           <UiUxAnalysisPage
-            // --- PASSAMOS OS DADOS E FUNÇÕES PARA O COMPONENTE ---
             onAnalyze={handleUiUxAnalyze}
             analysisData={uiUxAnalysisData}
             isLoading={isLoading}

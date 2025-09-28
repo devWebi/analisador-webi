@@ -29,7 +29,6 @@ const GeminiReport = ({ text }) => {
           ),
           p: ({ node, ...props }) => (
             <p
-              // Adicionada a classe break-words para garantir a quebra de linha
               className="text-[var(--text-secondary)] mb-4 leading-relaxed break-words"
               {...props}
             />
@@ -85,7 +84,6 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
           isOpen ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        {/* Adicionada a classe break-words ao contentor do texto */}
         <div className="p-4 border-t border-[var(--glass-border)] break-words">
           {children}
         </div>
@@ -97,14 +95,12 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
 const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-      {/* --- CABEÇALHO TOTALMENTE RECONSTRUÍDO PARA SER RESPONSIVO --- */}
       <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 no-print">
-        {/* Bloco do Logotipo e Título */}
         <div className="flex items-center gap-4 w-full md:w-auto">
           <img
             src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
             alt="Logotipo da Agência Webi"
-            className="h-12 sm:h-16 w-auto flex-shrink-0" // Tamanho do logo ajustado
+            className="h-12 sm:h-16 w-auto flex-shrink-0"
             onError={(e) => {
               e.target.onerror = null;
               e.target.style.display = "none";
@@ -123,7 +119,6 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
           </div>
         </div>
 
-        {/* Bloco dos Botões */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <button
             onClick={onReset}
@@ -144,25 +139,26 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
       <div id="report-container" className="p-0 sm:p-8">
         <PerformanceSummary metrics={data.detailedMetrics} />
 
+        {/* --- ALTERAÇÃO 1: SECÇÃO "RESUMO GERAL" MOVIDA PARA AQUI --- */}
+        <section className="mt-8">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+            Resumo Geral
+          </h2>
+          {/* --- ALTERAÇÃO 2: GRID ATUALIZADO PARA 4 COLUNAS EM TELAS MÉDIAS --- */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <ScoreGauge score={data.performanceScore} title="Performance" />
+            <ScoreGauge
+              score={data.accessibilityScore}
+              title="Acessibilidade"
+            />
+            <ScoreGauge score={data.bestPracticesScore} title="Boas Práticas" />
+            <ScoreGauge score={data.seoScore} title="SEO" />
+          </div>
+        </section>
+
+        {/* O layout do resto do conteúdo foi ajustado para manter a estrutura */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           <div className="lg:col-span-1 flex flex-col gap-8">
-            <section>
-              <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
-                Resumo Geral
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                <ScoreGauge score={data.performanceScore} title="Performance" />
-                <ScoreGauge
-                  score={data.accessibilityScore}
-                  title="Acessibilidade"
-                />
-                <ScoreGauge
-                  score={data.bestPracticesScore}
-                  title="Boas Práticas"
-                />
-                <ScoreGauge score={data.seoScore} title="SEO" />
-              </div>
-            </section>
             <section>
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
                 Você Também Pode:

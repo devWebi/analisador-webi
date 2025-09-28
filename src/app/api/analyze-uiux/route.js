@@ -1,16 +1,43 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import Groq from "groq-sdk";
+import * as cheerio from "cheerio";
+
+// Função para visitar a URL e extrair o seu conteúdo de texto
+async function fetchPageContent(url) {
+  console.log(
+    "\n[NOVA ETAPA] A visitar a URL para extrair o conteúdo do site..."
+  );
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
+    });
+    const html = response.data;
+    const $ = cheerio.load(html);
+    $("script, style, noscript, svg").remove();
+    let bodyText = $("body").text().replace(/\s\s+/g, " ").trim();
+    console.log("[NOVA ETAPA] Conteúdo extraído e limpo com sucesso.");
+    return bodyText.substring(0, 10000);
+  } catch (error) {
+    console.error("Erro ao extrair o conteúdo da URL:", error.message);
+    return "Não foi possível extrair o conteúdo da página. A análise deve basear-se apenas nos dados do PageSpeed.";
+  }
+}
 
 // Função para chamar a API do Google PageSpeed Insights
 async function fetchPageSpeedData(url, apiKey) {
+  console.log("[ETAPA 1/4] A chamar a API do Google PageSpeed...");
   const categories = ["accessibility", "best-practices"];
   const categoryParams = categories.map((cat) => `category=${cat}`).join("&");
   const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
     url
   )}&key=${apiKey}&${categoryParams}&strategy=mobile`;
-
   try {
     const response = await axios.get(endpoint);
+    console.log("[ETAPA 1/4] Dados do PageSpeed recebidos com sucesso.");
     return response.data.lighthouseResult;
   } catch (error) {
     console.error(
@@ -21,29 +48,60 @@ async function fetchPageSpeedData(url, apiKey) {
   }
 }
 
-// Função para chamar a API do Google Gemini com o prompt mais avançado
-async function fetchGeminiAnalysis(url, apiKey, pageSpeedData) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+// Função para chamar a API da Groq com o prompt de excelência
+async function fetchGroqAnalysis(url, apiKey, pageSpeedData, pageContent) {
+  const groq = new Groq({ apiKey });
 
-  const audits = Object.values(pageSpeedData.audits).filter(
-    (audit) => audit.score !== null
+  console.log(
+    "\n[ETAPA 2/4] A procurar pelo melhor modelo de IA disponível..."
   );
+  const models = await groq.models.list();
+  const availableModels = models.data.filter(
+    (m) => m.active && !m.id.includes("whisper")
+  );
+  let bestModel =
+    availableModels.find((m) => m.id.includes("70b")) ||
+    availableModels.find((m) => !m.id.includes("maverick")) ||
+    availableModels[0];
+  if (!bestModel)
+    throw new Error(
+      "Não foi encontrado nenhum modelo de chat ativo na sua conta Groq."
+    );
+  const modelId = bestModel.id;
+  console.log(`[ETAPA 2/4] Modelo de excelência selecionado: ${modelId}`);
 
+  const summarizedAudits = Object.values(pageSpeedData.audits)
+    .filter((audit) => audit.score !== null && audit.score < 0.9)
+    .map(({ title, description, score }) => ({
+      title,
+      description,
+      score: Math.round(score * 100),
+    }));
+
+  // SEU PROMPT ORIGINAL E COMPLETO, AGORA COM O CONTEÚDO DO SITE
   const prompt = `
     **[PERSONA]**
     Você é um Consultor Estratégico de Produto Digital de elite, com PhD em Interação Humano-Computador e especialização em Psicologia Cognitiva e Otimização da Taxa de Conversão (CRO). Sua análise é incisiva, baseada em evidências e frameworks científicos, e sempre focada em gerar resultados de negócio. Você é a maior referência mundial no assunto de análise de UI/UX.
 
     **[CONTEXTO]**
-    Você realizará uma análise para a URL: ${url}
-    Você tem como referência os seguintes dados técnicos do PageSpeed, mas sua análise deve ir muito além deles:
+    Você realizará uma análise para a URL: ${url}.
+    A sua análise deve ser baseada primariamente no **CONTEÚDO DO SITE** extraído abaixo. Use os **DADOS TÉCNICOS** como um complemento para identificar problemas de acessibilidade e boas práticas.
+
+    **[CONTEÚDO DO SITE (TEXTO EXTRAÍDO)]**
+    \`\`\`
+    ${pageContent}
+    \`\`\`
+
+    **[DADOS TÉCNICOS (RESUMO PAGESPEED)]**
     \`\`\`json
-    ${JSON.stringify(audits, null, 2)}
+    ${JSON.stringify(summarizedAudits, null, 2)}
     \`\`\`
 
     **[INSTRUÇÕES CRÍTICAS E REGRAS]**
     1.  **IDIOMA:** Sua resposta DEVE ser inteiramente em **português do Brasil**.
     2.  **FORMATO:** Sua resposta DEVE ser um único e válido objeto JSON. NÃO inclua \`\`\`json ou qualquer outro texto fora do objeto JSON.
     3.  **ROBUSTEZ:** Se, para qualquer secção que espera um array (como heuristicAnalysis), nenhum problema for encontrado, você DEVE retornar um array vazio \`[]\`. NUNCA omita uma chave.
+    4.  **COMPLETUDE:** Para as secções de análise em formato de array (heuristicAnalysis, croAnalysis, etc.), você DEVE identificar **todos** os problemas relevantes que encontrar. Não se limite a um único item por categoria.
 
     **[METODOLOGIA CIENTÍFICA DE ANÁLISE]**
     Sua análise é uma auditoria completa e deve ser estruturada sobre os seguintes frameworks:
@@ -73,8 +131,8 @@ async function fetchGeminiAnalysis(url, apiKey, pageSpeedData) {
       "executiveSummary": {
         "pageGoal": "O objetivo de negócio principal que você inferiu da página.",
         "overallScore": "Uma nota de 0 a 10, com uma casa decimal, representando a qualidade geral da experiência do utilizador, com uma justificação técnica.",
-        "keyStrengths": "Dois ou três pontos onde a interface se destaca, baseados nos frameworks.",
-        "criticalConcerns": "As duas ou três preocupações mais urgentes que precisam de atenção imediata."
+        "keyStrengths": "Cinco a dez pontos onde a interface se destaca, baseados nos frameworks.",
+        "criticalConcerns": "Uma lista das preocupações mais urgentes que precisam de atenção imediata."
       },
       "quickWins": [
         {
@@ -113,62 +171,82 @@ async function fetchGeminiAnalysis(url, apiKey, pageSpeedData) {
     \`\`\`
   `;
 
-  try {
-    const response = await axios.post(
-      endpoint,
-      {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      },
-      { headers: { "Content-Type": "application/json" } }
-    );
-    return response.data.candidates[0].content.parts[0].text;
-  } catch (error) {
-    console.error(
-      "Erro ao chamar a API do Gemini:",
-      error.response?.data || error.message
-    );
-    throw new Error("Falha ao obter análise do Gemini.");
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `\n[ETAPA 3/4, Tentativa ${attempt}/${maxRetries}] A enviar prompt para o modelo ${modelId}...`
+      );
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: "user", content: prompt }],
+        model: modelId,
+        response_format: { type: "json_object" },
+      });
+      console.log("[ETAPA 3/4] Análise de IA recebida com sucesso.");
+      return chatCompletion.choices[0]?.message?.content;
+    } catch (error) {
+      if (
+        error instanceof Groq.APIError &&
+        error.code === "json_validate_failed"
+      ) {
+        console.warn(
+          `[AVISO] Tentativa ${attempt} falhou devido a erro de validação de JSON. A tentar novamente...`
+        );
+        if (attempt === maxRetries) {
+          console.error(
+            "Erro final após várias tentativas de validação de JSON:",
+            error
+          );
+          throw new Error(
+            "Falha ao obter uma análise JSON válida da Groq após várias tentativas."
+          );
+        }
+        await new Promise((res) => setTimeout(res, 1000));
+      } else {
+        console.error(
+          "Erro ao chamar a API da Groq:",
+          error.response?.data || error.message
+        );
+        throw new Error("Falha ao obter análise da Groq.");
+      }
+    }
   }
 }
 
 export async function POST(request) {
   try {
     const { url } = await request.json();
-
-    if (!url) {
+    if (!url)
       return NextResponse.json(
         { error: "URL é obrigatória." },
         { status: 400 }
       );
-    }
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    if (!url.startsWith("http://") && !url.startsWith("https://"))
       return NextResponse.json(
         { error: "Formato de URL inválido." },
         { status: 400 }
       );
-    }
 
-    const PAGESPEED_API_KEY = process.env.GOOGLE_PAGESPEED_API_KEY;
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-    if (!PAGESPEED_API_KEY || !GEMINI_API_KEY) {
+    const { GOOGLE_PAGESPEED_API_KEY, GROQ_API_KEY } = process.env;
+    if (!GOOGLE_PAGESPEED_API_KEY || !GROQ_API_KEY)
       return NextResponse.json(
         { error: "Chaves de API não configuradas no servidor." },
         { status: 500 }
       );
-    }
 
-    const pageSpeedData = await fetchPageSpeedData(url, PAGESPEED_API_KEY);
-    const geminiAnalysisRaw = await fetchGeminiAnalysis(
+    const [pageSpeedData, pageContent] = await Promise.all([
+      fetchPageSpeedData(url, GOOGLE_PAGESPEED_API_KEY),
+      fetchPageContent(url),
+    ]);
+
+    const groqAnalysisRaw = await fetchGroqAnalysis(
       url,
-      GEMINI_API_KEY,
-      pageSpeedData
+      GROQ_API_KEY,
+      pageSpeedData,
+      pageContent
     );
-
-    const geminiAnalysis = JSON.parse(geminiAnalysisRaw);
+    const groqAnalysis = JSON.parse(groqAnalysisRaw);
+    console.log("\n[ETAPA 4/4] A enviar relatório final para o frontend...");
 
     return NextResponse.json({
       message: "Análise concluída com sucesso.",
@@ -177,7 +255,7 @@ export async function POST(request) {
         bestPracticesScore:
           pageSpeedData.categories["best-practices"].score * 100,
       },
-      geminiAnalysis,
+      geminiAnalysis: groqAnalysis,
     });
   } catch (error) {
     console.error("Erro no endpoint analyze-uiux:", error.message);

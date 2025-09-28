@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} antialiased`}>
         {children}
 
-        {/* 2. O seu código de monitoramento foi adicionado aqui */}
+        {/*Aqui ta o codigo do RD */}
         <Script
           id="rdstation-monitoring-script"
           strategy="afterInteractive"

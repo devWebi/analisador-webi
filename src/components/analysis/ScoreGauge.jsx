@@ -1,83 +1,130 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-// A função de contexto permanece a mesma
-const getScoreContext = (score) => {
-  if (score >= 90) return { text: "Excelente", color: "text-emerald-400" };
-  if (score >= 50) return { text: "Razoável", color: "text-amber-400" };
-  return { text: "Lento", color: "text-red-400" };
+// Função para obter as cores e o texto com base na pontuação (mantida)
+const getScoreStyle = (score) => {
+  if (score >= 90) {
+    return {
+      text: "Excelente",
+      colorClass: "text-green-500",
+      colorValue: "#22c55e",
+    };
+  }
+  if (score >= 50) {
+    return {
+      text: "Razoável",
+      colorClass: "text-orange-400",
+      colorValue: "#fb923c",
+    };
+  }
+  return {
+    text: "Lento",
+    colorClass: "text-red-500",
+    colorValue: "#ef4444",
+  };
 };
 
-// Adicionamos as novas propriedades (props) 'onClick' e 'isClickable'
-const ScoreGauge = ({ score, title, onClick, isClickable = false }) => {
-  const color = "var(--accent-color)";
-  const circumference = 2 * Math.PI * 55;
-  const offset = circumference - (score / 100) * circumference;
-  const { text: contextText, color: contextColor } = getScoreContext(score);
+const ScoreGauge = ({ score, title }) => {
+  const [displayScore, setDisplayScore] = useState(0);
+  const { text: contextText, colorClass, colorValue } = getScoreStyle(score);
 
-  // A classe base agora inclui 'group' para permitir o hover a partir do elemento pai
-  // e 'interactive-card' (do nosso animations.css) se for clicável.
-  const containerClasses = `relative flex flex-col items-center justify-center p-6 glass-pane text-center shadow-2xl h-full group ${
-    isClickable ? "cursor-pointer interactive-card" : ""
-  }`;
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  // O offset final para a animação do círculo
+  const finalOffset = circumference - (score / 100) * circumference;
 
-  // O conteúdo visual do componente
-  const content = (
-    <>
-      <p className="font-semibold text-[var(--text-secondary)] uppercase tracking-widest text-sm mb-2">
+  // Estado para controlar o offset do círculo para a animação
+  const [strokeOffset, setStrokeOffset] = useState(circumference);
+
+  // Hook para controlar as animações quando o componente é montado
+  useEffect(() => {
+    // Animação do círculo
+    // Damos um pequeno atraso para garantir que a transição CSS é aplicada
+    const circleTimer = setTimeout(() => {
+      setStrokeOffset(finalOffset);
+    }, 100);
+
+    // Animação do contador de números
+    let startTime;
+    const animationDuration = 1500; // 1.5 segundos
+
+    const animateCount = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsedTime = timestamp - startTime;
+      const progress = Math.min(elapsedTime / animationDuration, 1);
+
+      // Easing function (ease-out) para uma animação mais suave
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const currentScore = Math.round(easedProgress * score);
+
+      setDisplayScore(currentScore);
+
+      if (elapsedTime < animationDuration) {
+        requestAnimationFrame(animateCount);
+      } else {
+        // Garante que o valor final é exato
+        setDisplayScore(score);
+      }
+    };
+
+    requestAnimationFrame(animateCount);
+
+    // Limpa o temporizador se o componente for desmontado
+    return () => clearTimeout(circleTimer);
+  }, [score, finalOffset]);
+
+  return (
+    // O card agora tem uma transição de escala ao passar o rato
+    <div className="relative flex flex-col items-center justify-center p-4 sm:p-6 glass-pane text-center shadow-2xl h-full transition-transform duration-300 hover:scale-105">
+      <p className="font-semibold text-[var(--text-secondary)] uppercase tracking-widest text-xs sm:text-sm mb-2">
         {title}
       </p>
-      <div className="relative w-32 h-32">
+      {/* Container do SVG agora é responsivo */}
+      <div className="relative w-full aspect-square max-w-[150px] mx-auto">
         <svg className="w-full h-full" viewBox="0 0 120 120">
+          {/* Círculo de fundo */}
           <circle
-            strokeWidth="10"
-            stroke="rgba(128, 128, 128, 0.7)"
+            strokeWidth="8"
+            stroke="rgba(128, 128, 128, 0.3)"
             fill="transparent"
-            r="55"
+            r={radius}
             cx="60"
             cy="60"
           />
+          {/* Círculo de progresso animado */}
           <circle
-            strokeWidth="10"
+            strokeWidth="8"
             strokeLinecap="round"
-            stroke={color}
+            stroke={colorValue}
             fill="transparent"
-            r="55"
+            r={radius}
             cx="60"
             cy="60"
             style={{
               strokeDasharray: circumference,
-              strokeDashoffset: offset,
-              transition: "stroke-dashoffset 1s cubic-bezier(0.65, 0, 0.35, 1)",
-              filter: `drop-shadow(0 0 5px ${color})`,
+              strokeDashoffset: strokeOffset, // Usamos o estado para animar
+              transition:
+                "stroke-dashoffset 1.5s cubic-bezier(0.65, 0, 0.35, 1), stroke 0.5s",
+              // ALTERAÇÃO: Brilho do círculo reduzido
+              filter: `drop-shadow(0 0 3px ${colorValue})`,
             }}
             transform="rotate(-90 60 60)"
           />
         </svg>
         <span
-          className="absolute inset-0 flex items-center justify-center text-4xl font-bold"
-          style={{ color: color, textShadow: `0 0 10px ${color}` }}
+          className="absolute inset-0 flex items-center justify-center text-4xl sm:text-5xl font-bold font-mono"
+          style={{
+            color: colorValue,
+            // ALTERAÇÃO: Brilho do texto reduzido
+            textShadow: `0 0 4px ${colorValue}`,
+          }}
         >
-          {score}
+          {displayScore}
         </span>
       </div>
-      <p className={`mt-3 font-bold text-lg ${contextColor}`}>{contextText}</p>
-      {/* Este texto só aparece quando o card é clicável e o rato está por cima */}
-      {isClickable && (
-        <span className="absolute bottom-4 text-xs font-bold text-[var(--accent-color)] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          Ver Detalhes
-        </span>
-      )}
-    </>
-  );
-
-  // Se o componente for clicável, envolvemos o conteúdo num <button>
-  // Se não, usamos uma <div> normal.
-  return isClickable ? (
-    <button onClick={onClick} className={containerClasses}>
-      {content}
-    </button>
-  ) : (
-    <div className={containerClasses}>{content}</div>
+      <p className={`mt-3 font-bold text-base sm:text-lg ${colorClass}`}>
+        {contextText}
+      </p>
+    </div>
   );
 };
 
