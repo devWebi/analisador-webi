@@ -68,15 +68,75 @@ const LeadGenModal = ({
               className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
             />
           </div>
-          {/* --- NOVO CAMPO DE "CARGO" ADICIONADO --- */}
-          <input
-            type="text"
+          <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            placeholder="Seu cargo"
             required
-            className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
-          />
+            // A estilização foi completamente refeita para uma aparência premium
+            className="w-full pl-5 pr-10 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300 appearance-none bg-no-repeat"
+            style={{
+              // Adiciona um ícone de seta (chevron) personalizado
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: "right 0.75rem center",
+              backgroundSize: "1.5em 1.5em",
+            }}
+          >
+            {/* A primeira opção agora reflete o estado de 'não selecionado' de forma mais elegante */}
+            <option value="" disabled className="text-[var(--text-secondary)]">
+              Selecione o seu cargo...
+            </option>
+
+            {/* As opções agora têm uma estilização consistente com o tema */}
+            <option
+              value="CEO / Sócio / Fundador"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              CEO / Sócio / Fundador
+            </option>
+            <option
+              value="Diretor"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Diretor
+            </option>
+            <option
+              value="Gerente"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Gerente
+            </option>
+            <option
+              value="Coordenador"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Coordenador
+            </option>
+            <option
+              value="Analista"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Analista
+            </option>
+            <option
+              value="Estudante"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Estudante
+            </option>
+            <option
+              value="Outros"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Outros
+            </option>
+            <option
+              value="Conheço o proprietário de uma empresa"
+              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+            >
+              Conheço o proprietário de uma empresa
+            </option>
+          </select>
+
           <input
             type="url"
             value={url}
@@ -86,9 +146,6 @@ const LeadGenModal = ({
             required
             className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
           />
-          <p className="text-center text-[var(--text-secondary)] text-sm pt-2">
-            Escolha a estratégia de análise:
-          </p>
 
           <button
             type="submit"
