@@ -135,31 +135,26 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
           </button>
         </div>
       </header>
-
+      {/* --- ALTERAÇÃO 1: SECÇÃO "RESUMO GERAL" MOVIDA PARA AQUI --- */}
+      <section className="mt-8">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+          Resumo Geral
+        </h2>
+        {/* --- ALTERAÇÃO 2: GRID ATUALIZADO PARA 4 COLUNAS EM TELAS MÉDIAS --- */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <ScoreGauge score={data.performanceScore} title="Performance" />
+          <ScoreGauge score={data.accessibilityScore} title="Acessibilidade" />
+          <ScoreGauge score={data.bestPracticesScore} title="Boas Práticas" />
+          <ScoreGauge score={data.seoScore} title="SEO" />
+        </div>
+      </section>
       <div id="report-container" className="p-0 sm:p-8">
         <PerformanceSummary metrics={data.detailedMetrics} />
 
-        {/* --- ALTERAÇÃO 1: SECÇÃO "RESUMO GERAL" MOVIDA PARA AQUI --- */}
-        <section className="mt-8">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
-            Resumo Geral
-          </h2>
-          {/* --- ALTERAÇÃO 2: GRID ATUALIZADO PARA 4 COLUNAS EM TELAS MÉDIAS --- */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            <ScoreGauge score={data.performanceScore} title="Performance" />
-            <ScoreGauge
-              score={data.accessibilityScore}
-              title="Acessibilidade"
-            />
-            <ScoreGauge score={data.bestPracticesScore} title="Boas Práticas" />
-            <ScoreGauge score={data.seoScore} title="SEO" />
-          </div>
-        </section>
-
         {/* O layout do resto do conteúdo foi ajustado para manter a estrutura */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-          <div className="lg:col-span-1 flex flex-col gap-8">
-            <section>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 ">
+          <div className="lg:col-span-1 flex flex-col gap-8 ">
+            <section className="no-print">
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
                 Você Também Pode:
               </h2>

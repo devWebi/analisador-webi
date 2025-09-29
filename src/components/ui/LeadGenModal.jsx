@@ -12,12 +12,12 @@ const LeadGenModal = ({
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  // --- NOVO ESTADO PARA O CAMPO "CARGO" ---
+  const [telephone, setTelephone] = useState("");
   const [role, setRole] = useState("");
 
   const handleModalSubmit = (e) => {
     e.preventDefault();
-    if (url && name && email && role && !isLoading) {
+    if (url && name && email && telephone && role && !isLoading) {
       // --- O NOVO CAMPO "ROLE" É INCLUÍDO NA CAPTURA ---
       console.log("Novo Lead Capturado:", { name, email, role, url });
       onAnalyze(url, strategy);
@@ -64,6 +64,14 @@ const LeadGenModal = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="O seu melhor email"
+              required
+              className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
+            />
+            <input
+              type="telephone"
+              value={telephone}
+              onChange={(e) => setTelephone(e.target.value)}
+              placeholder="O seu melhor telefone"
               required
               className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
             />
