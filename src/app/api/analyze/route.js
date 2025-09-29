@@ -165,9 +165,20 @@ export async function POST(request) {
         model: modelId,
       });
 
-      analysisResult = chatCompletion.choices[0]?.message?.content || "";
-      console.log("[ETAPA 4/5] Análise da Groq recebida com sucesso.");
+      // CÓDIGO CORRIGIDO (DEPOIS DA MUDANÇA)
+
+      // 1. Pega a resposta BRUTA da IA
+      const respostaBrutaDaIa =
+        chatCompletion.choices[0]?.message?.content || "";
+
+      // 2. LIMPA a resposta para remover o bloco <think>
+      analysisResult = respostaBrutaDaIa
+        .replace(/<think>[\s\S]*?<\/think>/, "")
+        .trim();
+
+      console.log("[ETAPA 4/5] Análise da Groq recebida e LIMPA com sucesso.");
     } catch (apiError) {
+      //...
       console.error("\nERRO DETALHADO AO CHAMAR A API DE IA:", apiError);
       console.warn(
         "AVISO: A análise de IA falhou. O relatório continuará com a mensagem padrão."
