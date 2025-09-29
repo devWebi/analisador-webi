@@ -76,6 +76,8 @@ export async function POST(request) {
 
       // SEU PROMPT COMPLETO ESTÁ AQUI
       const prompt = `
+      NUNCA use tags de pensamento como <think> ou [Pensamento]. A sua resposta deve conter apenas o relatório final.
+      
         **PERSONA:**
         Você é o Agente Webi, um consultor de performance web de classe mundial. Sua comunicação é clara, precisa e focada em gerar valor para o cliente.
 
