@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Os componentes de ícone foram definidos aqui para resolver o erro de compilação anterior.
 const SearchIcon = ({ className = "w-6 h-6" }) => (
@@ -55,19 +55,29 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     url: "",
   });
 
-  // LÓGICA FINAL - Disparando o evento correto para o RD Station
+  const rdFormRef = useRef(null);
+  const formRef = useRef(null);
+
   useEffect(() => {
     let attempts = 0;
+    console.log("🕵️‍♂️ [RD LOG] Iniciando busca pelo script do RD Station...");
     const intervalId = setInterval(() => {
       attempts++;
-      if (typeof window.RDStationForms !== "undefined") {
-        document.dispatchEvent(new Event("rdstation:render_forms"));
+      console.log(`...[RD LOG] Tentativa ${attempts}`);
+
+      if (typeof window.RDStationForms !== "undefined" && formRef.current) {
+        rdFormRef.current = new window.RDStationForms(
+          formRef.current,
+          "w-form-site-analisador-ae903e2d34187413ced1"
+        );
         console.log(
-          "✅ Evento 'rdstation:render_forms' disparado para o modal."
+          "✅ [RD LOG] Sucesso! Instância do formulário RD Station criada e pronta."
         );
         clearInterval(intervalId);
       } else if (attempts > 25) {
-        console.error("❌ O script do RD Station não carregou a tempo.");
+        console.error(
+          "❌ [RD LOG] Falha! O script do RD Station não foi encontrado no tempo limite."
+        );
         clearInterval(intervalId);
       }
     }, 200);
@@ -93,16 +103,31 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
   };
 
   const handleModalSubmit = (e) => {
-    // A LINHA ABAIXO FOI REMOVIDA.
-    // e.preventDefault();
-    // Isso é crucial para permitir que o script do RD Station intercepte
-    // o envio do formulário antes que nossa lógica seja executada.
+    e.preventDefault();
+    console.log("▶️ [APP LOG] Submissão do formulário iniciada.");
 
     if (Object.values(formData).every(Boolean) && !isLoading) {
-      console.log("Novo Lead Capturado:", formData);
-      // As funções da sua aplicação continuam a ser chamadas normalmente.
+      if (rdFormRef.current) {
+        console.log(
+          "📨 [RD LOG] Preparando para enviar dados para o RD Station..."
+        );
+        rdFormRef.current.send();
+        console.log(
+          "✅ [RD LOG] Comando de envio executado. Verifique a plataforma da RD para confirmar o recebimento."
+        );
+      } else {
+        console.error(
+          "❌ [RD LOG] ERRO CRÍTICO: A instância do formulário RD não foi criada. O envio não pode ser realizado."
+        );
+      }
+
+      console.log("📋 [APP LOG] Dados do formulário capturados:", formData);
       onAnalyze(formData.url, strategy);
       onClose();
+    } else {
+      console.warn(
+        "⚠️ [APP LOG] Envio bloqueado. Motivo: Formulário incompleto ou análise em andamento."
+      );
     }
   };
 
@@ -123,7 +148,7 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
           Preencha os seus dados para receber a sua análise gratuita.
         </p>
 
-        <form onSubmit={handleModalSubmit} className="space-y-4">
+        <form ref={formRef} onSubmit={handleModalSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               type="text"
