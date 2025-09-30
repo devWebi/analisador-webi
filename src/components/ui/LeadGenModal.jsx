@@ -121,10 +121,10 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     console.log("▶️ [APP LOG] Submissão do formulário iniciada.");
 
     if (Object.values(formData).every(Boolean) && !isLoading) {
-      // SOLUÇÃO ROBUSTA: Submissão de um formulário oculto
+      // SOLUÇÃO ROBUSTA: Submissão de um formulário oculto para um iframe oculto
       const hiddenForm = document.createElement("form");
+      hiddenForm.target = "rd-iframe-target"; // Aponta para o nosso iframe invisível
 
-      // Mapeia os dados do estado para campos de input no formulário oculto
       for (const key in formData) {
         const input = document.createElement("input");
         input.type = "hidden";
@@ -133,23 +133,22 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
         hiddenForm.appendChild(input);
       }
 
-      // Adiciona o identificador de conversão
       const identifierInput = document.createElement("input");
       identifierInput.type = "hidden";
       identifierInput.name = "conversion_identifier";
       identifierInput.value = "w-form-site-analisador-ae903e2d34187413ced1";
       hiddenForm.appendChild(identifierInput);
 
-      // Adiciona o formulário oculto à página e o submete
       document.body.appendChild(hiddenForm);
       console.log(
         "✅ [RD LOG] Formulário oculto criado. A submeter para o RD Station..."
       );
       hiddenForm.submit();
 
-      // Remove o formulário oculto após a submissão
       document.body.removeChild(hiddenForm);
-      console.log("✅ [RD LOG] Submissão nativa disparada.");
+      console.log(
+        "✅ [RD LOG] Submissão nativa disparada sem recarregar a página."
+      );
 
       console.log("📋 [APP LOG] Dados do formulário capturados:", formData);
       onAnalyze(formData.url, strategy);
@@ -269,6 +268,8 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
           </button>
         </form>
       </div>
+      {/* Iframe invisível que serve como alvo para a submissão do formulário oculto */}
+      <iframe name="rd-iframe-target" style={{ display: "none" }}></iframe>
     </div>
   );
 };
