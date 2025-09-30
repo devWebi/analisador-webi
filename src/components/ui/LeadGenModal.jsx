@@ -1,34 +1,105 @@
-import React, { useState } from "react";
-import { SearchIcon, XCircleIcon } from "./Icons";
-import StrategyToggle from "./StrategyToggle";
+import React, { useState, useEffect } from "react";
 
-const LeadGenModal = ({
-  onClose,
-  onAnalyze,
-  isLoading,
-  strategy,
-  setStrategy,
-}) => {
-  const [url, setUrl] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [telephone, setTelephone] = useState("");
-  const [role, setRole] = useState("");
+// Os componentes de ícone foram definidos aqui para resolver o erro de compilação anterior.
+const SearchIcon = ({ className = "w-6 h-6" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+    />
+  </svg>
+);
 
-  const handleModalSubmit = (e) => {
-    e.preventDefault();
-    if (url && name && email && telephone && role && !isLoading) {
-      // --- O NOVO CAMPO "ROLE" É INCLUÍDO NA CAPTURA ---
-      console.log("Novo Lead Capturado:", { name, email, role, url });
-      onAnalyze(url, strategy);
-      onClose();
+const XCircleIcon = ({ className = "w-8 h-8" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24" // CORREÇÃO: Adicionado o "24" final para completar o viewBox.
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const roleOptions = [
+  "CEO / Sócio / Fundador",
+  "Diretor",
+  "Gerente",
+  "Coordenador",
+  "Analista",
+  "Estudante",
+  "Outros",
+  "Conheço o proprietário de uma empresa",
+];
+
+const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    telephone: "",
+    role: "",
+    url: "",
+  });
+
+  // LÓGICA FINAL - Disparando o evento correto para o RD Station
+  useEffect(() => {
+    let attempts = 0;
+    const intervalId = setInterval(() => {
+      attempts++;
+      // A condição agora é apenas verificar se o script principal carregou
+      if (typeof window.RDStationForms !== "undefined") {
+        // AQUI ESTÁ A SOLUÇÃO: Disparamos um evento que o script do RD ouve.
+        document.dispatchEvent(new Event("rdstation:render_forms"));
+        console.log(
+          "✅ Evento 'rdstation:render_forms' disparado para o modal."
+        );
+        clearInterval(intervalId);
+      } else if (attempts > 25) {
+        console.error("❌ O script do RD Station não carregou a tempo.");
+        clearInterval(intervalId);
+      }
+    }, 200);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleUrlBlur = () => {
+    if (formData.url && !formData.url.startsWith("http")) {
+      setFormData((prevData) => ({
+        ...prevData,
+        url: `https://${prevData.url}`,
+      }));
     }
   };
 
-  // --- NOVA FUNÇÃO PARA AUTO-CORRIGIR A URL ---
-  const handleUrlBlur = () => {
-    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
-      setUrl(`https://${url}`);
+  const handleModalSubmit = (e) => {
+    e.preventDefault();
+    if (Object.values(formData).every(Boolean) && !isLoading) {
+      console.log("Novo Lead Capturado:", formData);
+      onAnalyze(formData.url, strategy);
+      onClose();
     }
   };
 
@@ -39,7 +110,7 @@ const LeadGenModal = ({
           onClick={onClose}
           className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
         >
-          <XCircleIcon className="w-8 h-8" />
+          <XCircleIcon />
         </button>
 
         <h2 className="text-3xl font-bold text-center text-[var(--text-primary)] mb-2">
@@ -53,103 +124,64 @@ const LeadGenModal = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="O seu nome"
               required
               className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
             />
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="O seu melhor email"
               required
               className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
             />
             <input
-              type="telephone"
-              value={telephone}
-              onChange={(e) => setTelephone(e.target.value)}
+              type="tel"
+              name="telephone"
+              value={formData.telephone}
+              onChange={handleChange}
               placeholder="O seu melhor telefone"
               required
               className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
             />
           </div>
           <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
             required
-            // A estilização foi completamente refeita para uma aparência premium
             className="w-full pl-5 pr-10 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300 appearance-none bg-no-repeat"
             style={{
-              // Adiciona um ícone de seta (chevron) personalizado
               backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
               backgroundPosition: "right 0.75rem center",
               backgroundSize: "1.5em 1.5em",
             }}
           >
-            {/* A primeira opção agora reflete o estado de 'não selecionado' de forma mais elegante */}
             <option value="" disabled className="text-[var(--text-secondary)]">
               Selecione o seu cargo...
             </option>
-
-            {/* As opções agora têm uma estilização consistente com o tema */}
-            <option
-              value="CEO / Sócio / Fundador"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              CEO / Sócio / Fundador
-            </option>
-            <option
-              value="Diretor"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Diretor
-            </option>
-            <option
-              value="Gerente"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Gerente
-            </option>
-            <option
-              value="Coordenador"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Coordenador
-            </option>
-            <option
-              value="Analista"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Analista
-            </option>
-            <option
-              value="Estudante"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Estudante
-            </option>
-            <option
-              value="Outros"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Outros
-            </option>
-            <option
-              value="Conheço o proprietário de uma empresa"
-              className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-            >
-              Conheço o proprietário de uma empresa
-            </option>
+            {roleOptions.map((role) => (
+              <option
+                key={role}
+                value={role}
+                className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+              >
+                {role}
+              </option>
+            ))}
           </select>
 
           <input
             type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onBlur={handleUrlBlur} // A função de auto-correção é chamada aqui
+            name="url"
+            value={formData.url}
+            onChange={handleChange}
+            onBlur={handleUrlBlur}
             placeholder="https://seusiteincrivel.com"
             required
             className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"

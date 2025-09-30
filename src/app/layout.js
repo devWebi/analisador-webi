@@ -31,6 +31,13 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
           src="https://d335luupugsy2.cloudfront.net/js/loader-scripts/dfeb70ee-bfce-4e09-90ce-4303137b6f66-loader.js"
         />
+
+        {/* Script NOVO E ESSENCIAL para formulários (adicionar este) */}
+        <Script
+          id="rdstation-forms-script"
+          strategy="afterInteractive"
+          src="https://d335luupugsy2.cloudfront.net/js/rdstation-forms/stable/rdstation-forms.min.js"
+        />
       </body>
     </html>
   );
