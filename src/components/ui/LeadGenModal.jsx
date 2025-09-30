@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 
-// Os componentes de ícone foram definidos aqui para resolver o erro de compilação anterior.
+// Os componentes de ícone foram definidos aqui.
 const SearchIcon = ({ className = "w-6 h-6" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -56,7 +56,6 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
   });
 
   const rdFormRef = useRef(null);
-  const formRef = useRef(null);
 
   useEffect(() => {
     let attempts = 0;
@@ -65,9 +64,11 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
       attempts++;
       console.log(`...[RD LOG] Tentativa ${attempts}`);
 
-      if (typeof window.RDStationForms !== "undefined" && formRef.current) {
+      // A condição agora é apenas se a função construtora existe
+      if (typeof window.RDStationForms !== "undefined") {
+        // 2. Passamos o ID como TEXTO, não o objeto do formulário.
         rdFormRef.current = new window.RDStationForms(
-          formRef.current,
+          "rd-lead-form",
           "w-form-site-analisador-ae903e2d34187413ced1"
         );
         console.log(
@@ -148,7 +149,12 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
           Preencha os seus dados para receber a sua análise gratuita.
         </p>
 
-        <form ref={formRef} onSubmit={handleModalSubmit} className="space-y-4">
+        {/* 1. Adicionamos um ID único ao nosso formulário */}
+        <form
+          id="rd-lead-form"
+          onSubmit={handleModalSubmit}
+          className="space-y-4"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <input
               type="text"
