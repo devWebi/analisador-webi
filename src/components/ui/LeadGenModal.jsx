@@ -55,8 +55,6 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     url: "",
   });
 
-  const rdFormRef = useRef(null);
-
   useEffect(() => {
     let attempts = 0;
     console.log("🕵️‍♂️ [RD LOG] Iniciando busca pelo script do RD Station...");
@@ -64,15 +62,14 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
       attempts++;
       console.log(`...[RD LOG] Tentativa ${attempts}`);
 
-      // A condição agora é apenas se a função construtora existe
       if (typeof window.RDStationForms !== "undefined") {
-        // 2. Passamos o ID como TEXTO, não o objeto do formulário.
-        rdFormRef.current = new window.RDStationForms(
+        // A função é chamada apenas para configurar o listener da RD no nosso formulário.
+        new window.RDStationForms(
           "rd-lead-form",
           "w-form-site-analisador-ae903e2d34187413ced1"
         );
         console.log(
-          "✅ [RD LOG] Sucesso! Instância do formulário RD Station criada e pronta."
+          "✅ [RD LOG] Sucesso! O listener do RD Station foi anexado ao formulário."
         );
         clearInterval(intervalId);
       } else if (attempts > 25) {
@@ -86,12 +83,31 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Função para formatar o número de telefone com uma máscara
+  const formatPhone = (value) => {
+    if (!value) return "";
+    value = value.replace(/\D/g, ""); // Remove tudo que não é dígito
+    value = value.replace(/^(\d{2})(\d)/g, "($1) $2"); // Coloca parênteses em volta dos dois primeiros dígitos
+    value = value.replace(/(\d)(\d{4})$/, "$1-$2"); // Coloca hífen entre o quarto e o quinto últimos dígitos
+    return value;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+
+    // Aplica a máscara se o campo for o de telefone
+    if (name === "telephone") {
+      const maskedPhone = formatPhone(value);
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: maskedPhone,
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleUrlBlur = () => {
@@ -108,23 +124,21 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     console.log("▶️ [APP LOG] Submissão do formulário iniciada.");
 
     if (Object.values(formData).every(Boolean) && !isLoading) {
-      if (rdFormRef.current) {
-        console.log(
-          "📨 [RD LOG] Preparando para enviar dados para o RD Station..."
-        );
-        rdFormRef.current.send();
-        console.log(
-          "✅ [RD LOG] Comando de envio executado. Verifique a plataforma da RD para confirmar o recebimento."
-        );
-      } else {
-        console.error(
-          "❌ [RD LOG] ERRO CRÍTICO: A instância do formulário RD não foi criada. O envio não pode ser realizado."
-        );
-      }
+      // CORREÇÃO FINAL: Nós não chamamos nenhuma função de envio da RD.
+      // O script da RD já está "ouvindo" o evento de submit. Ao mantermos o preventDefault(),
+      // permitimos que o listener da RD seja executado sem que a página recarregue.
+      console.log(
+        "✅ [RD LOG] Evento de submit disparado. O listener automático da RD deve capturar os dados agora."
+      );
 
       console.log("📋 [APP LOG] Dados do formulário capturados:", formData);
       onAnalyze(formData.url, strategy);
-      onClose();
+
+      // Adicionamos um pequeno delay antes de fechar o modal como garantia,
+      // para dar tempo ao script da RD de processar os dados do formulário.
+      setTimeout(() => {
+        onClose();
+      }, 500);
     } else {
       console.warn(
         "⚠️ [APP LOG] Envio bloqueado. Motivo: Formulário incompleto ou análise em andamento."
@@ -149,7 +163,6 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
           Preencha os seus dados para receber a sua análise gratuita.
         </p>
 
-        {/* 1. Adicionamos um ID único ao nosso formulário */}
         <form
           id="rd-lead-form"
           onSubmit={handleModalSubmit}
@@ -179,8 +192,9 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
               name="telephone"
               value={formData.telephone}
               onChange={handleChange}
-              placeholder="O seu melhor telefone"
+              placeholder="(XX) XXXXX-XXXX"
               required
+              maxLength="15"
               className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
             />
           </div>
