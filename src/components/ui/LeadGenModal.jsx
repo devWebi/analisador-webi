@@ -23,7 +23,7 @@ const XCircleIcon = ({ className = "w-8 h-8" }) => (
     xmlns="http://www.w3.org/2000/svg"
     className={className}
     fill="none"
-    viewBox="0 0 24 24" // CORREÇÃO: Adicionado o "24" final para completar o viewBox.
+    viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
   >
@@ -89,7 +89,7 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     if (formData.url && !formData.url.startsWith("http")) {
       setFormData((prevData) => ({
         ...prevData,
-        url: `https://${prevData.url}`,
+        url: `https://${formData.url}`,
       }));
     }
   };
@@ -185,6 +185,17 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
             placeholder="https://seusiteincrivel.com"
             required
             className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
+          />
+
+          {/* // ===================================================================
+            // AJUSTE FINAL: Campo oculto para conectar com o RD Station.
+            // O 'value' é o identificador do formulário que você criou na RD.
+            // ===================================================================
+          */}
+          <input
+            type="hidden"
+            name="conversion_identifier"
+            value="w-form-site-analisador"
           />
 
           <button
