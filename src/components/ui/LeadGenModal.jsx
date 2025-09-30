@@ -60,9 +60,7 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     let attempts = 0;
     const intervalId = setInterval(() => {
       attempts++;
-      // A condição agora é apenas verificar se o script principal carregou
       if (typeof window.RDStationForms !== "undefined") {
-        // AQUI ESTÁ A SOLUÇÃO: Disparamos um evento que o script do RD ouve.
         document.dispatchEvent(new Event("rdstation:render_forms"));
         console.log(
           "✅ Evento 'rdstation:render_forms' disparado para o modal."
@@ -95,9 +93,14 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
   };
 
   const handleModalSubmit = (e) => {
-    e.preventDefault();
+    // A LINHA ABAIXO FOI REMOVIDA.
+    // e.preventDefault();
+    // Isso é crucial para permitir que o script do RD Station intercepte
+    // o envio do formulário antes que nossa lógica seja executada.
+
     if (Object.values(formData).every(Boolean) && !isLoading) {
       console.log("Novo Lead Capturado:", formData);
+      // As funções da sua aplicação continuam a ser chamadas normalmente.
       onAnalyze(formData.url, strategy);
       onClose();
     }
@@ -187,15 +190,10 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
             className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
           />
 
-          {/* // ===================================================================
-            // AJUSTE FINAL: Campo oculto para conectar com o RD Station.
-            // O 'value' é o identificador do formulário que você criou na RD.
-            // ===================================================================
-          */}
           <input
             type="hidden"
             name="conversion_identifier"
-            value="w-form-site-analisador"
+            value="w-form-site-analisador-ae903e2d34187413ced1"
           />
 
           <button
