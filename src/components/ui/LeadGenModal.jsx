@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
 // Os componentes de ícone foram definidos aqui.
 const SearchIcon = ({ className = "w-6 h-6" }) => (
@@ -63,7 +63,6 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
       console.log(`...[RD LOG] Tentativa ${attempts}`);
 
       if (typeof window.RDStationForms !== "undefined") {
-        // A função é chamada apenas para configurar o listener da RD no nosso formulário.
         new window.RDStationForms(
           "rd-lead-form",
           "w-form-site-analisador-ae903e2d34187413ced1"
@@ -83,19 +82,17 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Função para formatar o número de telefone com uma máscara
   const formatPhone = (value) => {
     if (!value) return "";
-    value = value.replace(/\D/g, ""); // Remove tudo que não é dígito
-    value = value.replace(/^(\d{2})(\d)/g, "($1) $2"); // Coloca parênteses em volta dos dois primeiros dígitos
-    value = value.replace(/(\d)(\d{4})$/, "$1-$2"); // Coloca hífen entre o quarto e o quinto últimos dígitos
+    value = value.replace(/\D/g, "");
+    value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
+    value = value.replace(/(\d)(\d{4})$/, "$1-$2");
     return value;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Aplica a máscara se o campo for o de telefone
     if (name === "telephone") {
       const maskedPhone = formatPhone(value);
       setFormData((prevData) => ({
@@ -124,18 +121,39 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     console.log("▶️ [APP LOG] Submissão do formulário iniciada.");
 
     if (Object.values(formData).every(Boolean) && !isLoading) {
-      // CORREÇÃO FINAL: Nós não chamamos nenhuma função de envio da RD.
-      // O script da RD já está "ouvindo" o evento de submit. Ao mantermos o preventDefault(),
-      // permitimos que o listener da RD seja executado sem que a página recarregue.
+      // SOLUÇÃO ROBUSTA: Submissão de um formulário oculto
+      const hiddenForm = document.createElement("form");
+
+      // Mapeia os dados do estado para campos de input no formulário oculto
+      for (const key in formData) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = formData[key];
+        hiddenForm.appendChild(input);
+      }
+
+      // Adiciona o identificador de conversão
+      const identifierInput = document.createElement("input");
+      identifierInput.type = "hidden";
+      identifierInput.name = "conversion_identifier";
+      identifierInput.value = "w-form-site-analisador-ae903e2d34187413ced1";
+      hiddenForm.appendChild(identifierInput);
+
+      // Adiciona o formulário oculto à página e o submete
+      document.body.appendChild(hiddenForm);
       console.log(
-        "✅ [RD LOG] Evento de submit disparado. O listener automático da RD deve capturar os dados agora."
+        "✅ [RD LOG] Formulário oculto criado. A submeter para o RD Station..."
       );
+      hiddenForm.submit();
+
+      // Remove o formulário oculto após a submissão
+      document.body.removeChild(hiddenForm);
+      console.log("✅ [RD LOG] Submissão nativa disparada.");
 
       console.log("📋 [APP LOG] Dados do formulário capturados:", formData);
       onAnalyze(formData.url, strategy);
 
-      // Adicionamos um pequeno delay antes de fechar o modal como garantia,
-      // para dar tempo ao script da RD de processar os dados do formulário.
       setTimeout(() => {
         onClose();
       }, 500);
