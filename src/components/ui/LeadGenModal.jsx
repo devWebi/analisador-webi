@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Os componentes de ícone foram definidos aqui.
 const SearchIcon = ({ className = "w-6 h-6" }) => (
@@ -55,31 +55,25 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     url: "",
   });
 
+  const rdFormContainerRef = useRef(null);
+
+  // Efeito para injetar o script que cria o formulário da RD Station
   useEffect(() => {
-    let attempts = 0;
-    console.log("🕵️‍♂️ [RD LOG] Iniciando busca pelo script do RD Station...");
-    const intervalId = setInterval(() => {
-      attempts++;
-      console.log(`...[RD LOG] Tentativa ${attempts}`);
+    if (rdFormContainerRef.current) {
+      const oldScript = document.getElementById("rd-form-script");
+      if (oldScript) oldScript.remove();
 
-      if (typeof window.RDStationForms !== "undefined") {
-        new window.RDStationForms(
-          "rd-lead-form",
-          "w-form-site-analisador-ae903e2d34187413ced1"
-        );
-        console.log(
-          "✅ [RD LOG] Sucesso! O listener do RD Station foi anexado ao formulário."
-        );
-        clearInterval(intervalId);
-      } else if (attempts > 25) {
-        console.error(
-          "❌ [RD LOG] Falha! O script do RD Station não foi encontrado no tempo limite."
-        );
-        clearInterval(intervalId);
-      }
-    }, 200);
+      const script = document.createElement("script");
+      script.id = "rd-form-script";
+      script.type = "text/javascript";
+      // CORREÇÃO FINAL: Substituímos o ID do Google Analytics pelo seu Token Público da RD.
+      script.innerHTML = `new RDStationForms('w-form-site-analisador-ae903e2d34187413ced1', '5bef1d3c38bb3069f81035dcfcebc2d4').createForm();`;
 
-    return () => clearInterval(intervalId);
+      rdFormContainerRef.current.appendChild(script);
+      console.log(
+        "✅ [RD LOG] Script do formulário da RD Station injetado com o Token Público correto."
+      );
+    }
   }, []);
 
   const formatPhone = (value) => {
@@ -92,185 +86,196 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if (name === "telephone") {
-      const maskedPhone = formatPhone(value);
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: maskedPhone,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: formatPhone(value) }));
     } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleUrlBlur = () => {
     if (formData.url && !formData.url.startsWith("http")) {
-      setFormData((prevData) => ({
-        ...prevData,
-        url: `https://${formData.url}`,
-      }));
+      const newUrl = `https://${formData.url}`;
+      setFormData((prev) => ({ ...prev, url: newUrl }));
     }
   };
 
   const handleModalSubmit = (e) => {
     e.preventDefault();
-    console.log("▶️ [APP LOG] Submissão do formulário iniciada.");
+    if (isLoading) return;
 
-    if (Object.values(formData).every(Boolean) && !isLoading) {
-      // SOLUÇÃO ROBUSTA: Submissão de um formulário oculto para um iframe oculto
-      const hiddenForm = document.createElement("form");
-      hiddenForm.target = "rd-iframe-target"; // Aponta para o nosso iframe invisível
+    console.log("▶️ [APP LOG] Submissão iniciada.");
 
-      for (const key in formData) {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = formData[key];
-        hiddenForm.appendChild(input);
+    const rdForm = document.querySelector(
+      "#w-form-site-analisador-ae903e2d34187413ced1 form"
+    );
+    if (rdForm) {
+      console.log("✅ [RD LOG] Formulário oculto da RD encontrado.");
+
+      const rdFieldMapping = {
+        name: formData.name,
+        email: formData.email,
+        personal_phone: formData.telephone,
+        cf_cargo_select: formData.role,
+        cf_qual_e_o_site_da_sua_empresa: formData.url,
+        "privacy_data[legal_bases][1][value]": "1",
+      };
+
+      for (const [fieldName, value] of Object.entries(rdFieldMapping)) {
+        let field = rdForm.querySelector(`[name="${fieldName}"]`);
+        if (!field) {
+          field = document.createElement("input");
+          field.type = "hidden";
+          field.name = fieldName;
+          rdForm.appendChild(field);
+          console.log(
+            `[SYNC LOG] Campo oculto "${fieldName}" não encontrado e criado dinamicamente.`
+          );
+        }
+        field.value = value;
+        console.log(
+          `[SYNC LOG] Campo oculto "${fieldName}" preenchido com o valor: "${value}"`
+        );
       }
 
-      const identifierInput = document.createElement("input");
-      identifierInput.type = "hidden";
-      identifierInput.name = "conversion_identifier";
-      identifierInput.value = "w-form-site-analisador-ae903e2d34187413ced1";
-      hiddenForm.appendChild(identifierInput);
+      const iframeName = "rd-iframe-" + new Date().getTime();
+      const iframe = document.createElement("iframe");
+      iframe.name = iframeName;
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
 
-      document.body.appendChild(hiddenForm);
+      iframe.onload = () => {
+        console.log(
+          "✅ [RD LOG] SINAL POSITIVO: A submissão no iframe foi concluída. Os dados foram enviados."
+        );
+        setTimeout(() => {
+          if (document.body.contains(iframe)) document.body.removeChild(iframe);
+        }, 500);
+      };
+
+      rdForm.target = iframeName;
       console.log(
-        "✅ [RD LOG] Formulário oculto criado. A submeter para o RD Station..."
+        "📨 [RD LOG] Disparando submissão direta do formulário oculto..."
       );
-      hiddenForm.submit();
-
-      document.body.removeChild(hiddenForm);
-      console.log(
-        "✅ [RD LOG] Submissão nativa disparada sem recarregar a página."
-      );
-
-      console.log("📋 [APP LOG] Dados do formulário capturados:", formData);
-      onAnalyze(formData.url, strategy);
-
-      setTimeout(() => {
-        onClose();
-      }, 500);
+      rdForm.submit();
+      console.log("✅ [RD LOG] Comando de submissão executado.");
     } else {
-      console.warn(
-        "⚠️ [APP LOG] Envio bloqueado. Motivo: Formulário incompleto ou análise em andamento."
+      console.error(
+        "❌ [RD LOG] ERRO CRÍTICO: Formulário oculto da RD não encontrado."
       );
     }
+
+    console.log("▶️ [APP LOG] Iniciando a análise do site...");
+    onAnalyze(formData.url, strategy);
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in-fast p-4">
-      <div className="w-full max-w-2xl glass-pane p-8 rounded-2xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-        >
-          <XCircleIcon />
-        </button>
-
-        <h2 className="text-3xl font-bold text-center text-[var(--text-primary)] mb-2">
-          Quase lá!
-        </h2>
-        <p className="text-center text-[var(--text-secondary)] mb-6">
-          Preencha os seus dados para receber a sua análise gratuita.
-        </p>
-
-        <form
-          id="rd-lead-form"
-          onSubmit={handleModalSubmit}
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="O seu nome"
-              required
-              className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
-            />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="O seu melhor email"
-              required
-              className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
-            />
-            <input
-              type="tel"
-              name="telephone"
-              value={formData.telephone}
-              onChange={handleChange}
-              placeholder="(XX) XXXXX-XXXX"
-              required
-              maxLength="15"
-              className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
-            />
-          </div>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            required
-            className="w-full pl-5 pr-10 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300 appearance-none bg-no-repeat"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-              backgroundPosition: "right 0.75rem center",
-              backgroundSize: "1.5em 1.5em",
-            }}
-          >
-            <option value="" disabled className="text-[var(--text-secondary)]">
-              Selecione o seu cargo...
-            </option>
-            {roleOptions.map((role) => (
-              <option
-                key={role}
-                value={role}
-                className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
-              >
-                {role}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="url"
-            name="url"
-            value={formData.url}
-            onChange={handleChange}
-            onBlur={handleUrlBlur}
-            placeholder="https://seusiteincrivel.com"
-            required
-            className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
-          />
-
-          <input
-            type="hidden"
-            name="conversion_identifier"
-            value="w-form-site-analisador-ae903e2d34187413ced1"
-          />
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="main-button w-full flex items-center justify-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-black font-bold rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed"
-          >
-            <SearchIcon />
-            {isLoading ? "Analisando..." : "Analisar Agora"}
-          </button>
-        </form>
+    <>
+      <div ref={rdFormContainerRef} style={{ display: "none" }}>
+        <div role="main" id="w-form-site-analisador-ae903e2d34187413ced1"></div>
       </div>
-      {/* Iframe invisível que serve como alvo para a submissão do formulário oculto */}
-      <iframe name="rd-iframe-target" style={{ display: "none" }}></iframe>
-    </div>
+
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in-fast p-4">
+        <div className="w-full max-w-2xl glass-pane p-8 rounded-2xl relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <XCircleIcon />
+          </button>
+
+          <h2 className="text-3xl font-bold text-center text-[var(--text-primary)] mb-2">
+            Quase lá!
+          </h2>
+          <p className="text-center text-[var(--text-secondary)] mb-6">
+            Preencha os seus dados para receber a sua análise gratuita.
+          </p>
+
+          <form onSubmit={handleModalSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="O seu nome"
+                required
+                className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
+              />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="O seu melhor email"
+                required
+                className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
+              />
+              <input
+                type="tel"
+                name="telephone"
+                value={formData.telephone}
+                onChange={handleChange}
+                placeholder="(XX) XXXXX-XXXX"
+                required
+                maxLength="15"
+                className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
+              />
+            </div>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+              className="w-full pl-5 pr-10 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300 appearance-none bg-no-repeat"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%path stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: "right 0.75rem center",
+                backgroundSize: "1.5em 1.5em",
+              }}
+            >
+              <option
+                value=""
+                disabled
+                className="text-[var(--text-secondary)]"
+              >
+                Selecione o seu cargo...
+              </option>
+              {roleOptions.map((role) => (
+                <option
+                  key={role}
+                  value={role}
+                  className="bg-[var(--glass-bg)] text-[var(--text-primary)] font-semibold"
+                >
+                  {role}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="url"
+              name="url"
+              value={formData.url}
+              onChange={handleChange}
+              onBlur={handleUrlBlur}
+              placeholder="https://seusiteincrivel.com"
+              required
+              className="w-full px-5 py-3 bg-[var(--input-bg)] border-2 border-transparent rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-[var(--accent-color)] transition duration-300"
+            />
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="main-button w-full flex items-center justify-center gap-3 px-8 py-4 bg-[var(--accent-color)] text-black font-bold rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed"
+            >
+              <SearchIcon />
+              {isLoading ? "A analisar..." : "Analisar Agora"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </>
   );
 };
 

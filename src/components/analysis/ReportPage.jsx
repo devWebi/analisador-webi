@@ -1,10 +1,17 @@
 import React, { useState } from "react";
+
 import ScoreGauge from "./ScoreGauge";
+
 import ActionPlan from "./ActionPlan";
+
 import OpportunityItem from "./OpportunityItem";
+
 import PerformanceSummary from "./PerformanceSummary";
+
 import { DownloadIcon } from "../ui/Icons";
+
 import ReactMarkdown from "react-markdown";
+
 import remarkGfm from "remark-gfm";
 
 const handlePrint = () => {
@@ -27,18 +34,22 @@ const GeminiReport = ({ text }) => {
               {...props}
             />
           ),
+
           p: ({ node, ...props }) => (
             <p
               className="text-[var(--text-secondary)] mb-4 leading-relaxed break-words"
               {...props}
             />
           ),
+
           ul: ({ node, ...props }) => (
             <ul className="list-disc ml-6 space-y-2" {...props} />
           ),
+
           li: ({ node, ...props }) => (
             <li className="text-[var(--text-secondary)]" {...props} />
           ),
+
           strong: ({ node, ...props }) => (
             <strong
               className="font-semibold text-[var(--text-primary)]"
@@ -55,6 +66,7 @@ const GeminiReport = ({ text }) => {
 
 const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
   return (
     <div className="glass-pane overflow-hidden">
       <button
@@ -65,12 +77,14 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
           <h3 className="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
             {title}
           </h3>
+
           {count > 0 && (
             <span className="text-sm font-mono bg-white/10 text-[var(--text-secondary)] px-2 py-0.5 rounded-full">
               {count}
             </span>
           )}
         </div>
+
         <span
           className={`transform transition-transform duration-300 text-[var(--text-secondary)] ${
             isOpen ? "rotate-180" : ""
@@ -79,6 +93,7 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
           ▼
         </span>
       </button>
+
       <div
         className={`transition-all duration-500 ease-in-out ${
           isOpen ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
@@ -95,7 +110,9 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
 const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-      <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 no-print">
+      {/* 2. O header será visível na impressão por padrão, mas adicionamos 'print:block' para garantir. */}
+
+      <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 print:block">
         <div className="flex items-center gap-4 w-full md:w-auto">
           <img
             src="https://webi.com.br/wp-content/uploads/2025/08/Agencia-Webi-Logotipo-New-scaled.webp"
@@ -103,9 +120,11 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
             className="h-12 sm:h-16 w-auto flex-shrink-0"
             onError={(e) => {
               e.target.onerror = null;
+
               e.target.style.display = "none";
             }}
           />
+
           <div>
             <p className="text-sm text-[var(--text-secondary)] flex items-center gap-2">
               Relatório de Análise:{" "}
@@ -113,6 +132,7 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
                 {data.strategy}
               </span>
             </p>
+
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--accent-color)] break-all">
               {data.url}
             </h1>
@@ -126,6 +146,7 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
           >
             Analisar Outra URL
           </button>
+
           <button
             id="download-button"
             onClick={handlePrint}
@@ -135,29 +156,33 @@ const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
           </button>
         </div>
       </header>
-      {/* --- ALTERAÇÃO 1: SECÇÃO "RESUMO GERAL" MOVIDA PARA AQUI --- */}
+
       <section className="mt-8">
         <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
           Resumo Geral
         </h2>
-        {/* --- ALTERAÇÃO 2: GRID ATUALIZADO PARA 4 COLUNAS EM TELAS MÉDIAS --- */}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           <ScoreGauge score={data.performanceScore} title="Performance" />
+
           <ScoreGauge score={data.accessibilityScore} title="Acessibilidade" />
+
           <ScoreGauge score={data.bestPracticesScore} title="Boas Práticas" />
+
           <ScoreGauge score={data.seoScore} title="SEO" />
         </div>
       </section>
+
       <div id="report-container" className="p-0 sm:p-8">
         <PerformanceSummary metrics={data.detailedMetrics} />
 
-        {/* O layout do resto do conteúdo foi ajustado para manter a estrutura */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 ">
           <div className="lg:col-span-1 flex flex-col gap-8 ">
             <section className="no-print">
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
                 Você Também Pode:
               </h2>
+
               <ActionPlan
                 items={data.actionPlan}
                 onNavigate={onNavigateToUiUx}
