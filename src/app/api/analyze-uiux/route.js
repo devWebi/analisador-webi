@@ -3,7 +3,6 @@ import axios from "axios";
 import Groq from "groq-sdk";
 import * as cheerio from "cheerio";
 
-// Função para visitar a URL e extrair o seu conteúdo de texto
 async function fetchPageContent(url) {
   console.log(
     "\n[NOVA ETAPA] A visitar a URL para extrair o conteúdo do site..."
@@ -27,7 +26,6 @@ async function fetchPageContent(url) {
   }
 }
 
-// Função para chamar a API do Google PageSpeed Insights
 async function fetchPageSpeedData(url, apiKey) {
   console.log("[ETAPA 1/4] A chamar a API do Google PageSpeed...");
   const categories = ["accessibility", "best-practices"];
@@ -48,7 +46,6 @@ async function fetchPageSpeedData(url, apiKey) {
   }
 }
 
-// Função para chamar a API da Groq com o prompt de excelência
 async function fetchGroqAnalysis(url, apiKey, pageSpeedData, pageContent) {
   const groq = new Groq({ apiKey });
 
@@ -78,7 +75,6 @@ async function fetchGroqAnalysis(url, apiKey, pageSpeedData, pageContent) {
       score: Math.round(score * 100),
     }));
 
-  // SEU PROMPT ORIGINAL E COMPLETO, AGORA COM O CONTEÚDO DO SITE
   const prompt = `
     **[PERSONA]**
     Você é um Consultor Estratégico de Produto Digital de elite, com PhD em Interação Humano-Computador e especialização em Psicologia Cognitiva e Otimização da Taxa de Conversão (CRO). Sua análise é incisiva, baseada em evidências e frameworks científicos, e sempre focada em gerar resultados de negócio. Você é a maior referência mundial no assunto de análise de UI/UX.

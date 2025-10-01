@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
-// PASSO 1: Importar a biblioteca oficial da Groq
 import Groq from "groq-sdk";
 
-// Sua função para buscar dados do PageSpeed permanece INTACTA.
 async function fetchPageSpeedData(url, apiKey, strategy) {
   if (!apiKey) {
     throw new Error(
@@ -26,7 +24,6 @@ async function fetchPageSpeedData(url, apiKey, strategy) {
   return response.data.lighthouseResult;
 }
 
-// A função principal que lida com a requisição POST
 export async function POST(request) {
   try {
     const { url, strategy } = await request.json();
@@ -37,17 +34,14 @@ export async function POST(request) {
       );
     }
 
-    // PASSO 2: Usar as chaves de API corretas do seu ficheiro .env.local
     const { GOOGLE_PAGESPEED_API_KEY, GROQ_API_KEY } = process.env;
 
-    // 1. BUSCAR DADOS DO PAGESPEED (Sua lógica original)
     const pageSpeedData = await fetchPageSpeedData(
       url,
       GOOGLE_PAGESPEED_API_KEY,
       strategy
     );
 
-    // 2. ANALISAR COM A GROQ (Nova lógica robusta)
     let analysisResult =
       "### Análise Indisponível\n\nO nosso assistente de IA está temporariamente indisponível.";
     try {
@@ -74,7 +68,6 @@ export async function POST(request) {
           .slice(0, 5),
       };
 
-      // SEU PROMPT COMPLETO ESTÁ AQUI
       const prompt = `
       
 
@@ -127,10 +120,8 @@ export async function POST(request) {
         Seja objetivo e evite jargões. A clareza e a capacidade de ação do relatório são suas maiores prioridades. Foque no que é mais relevante para o dono do site.
       `;
 
-      // INICIALIZA O CLIENTE DA GROQ
       const groq = new Groq({ apiKey: GROQ_API_KEY });
 
-      // --- LÓGICA DE SELEÇÃO DE MODELO MELHORADA ---
       console.log(
         "[ETAPA 3/5] A procurar pelo melhor modelo de chat disponível na Groq..."
       );
@@ -154,9 +145,7 @@ export async function POST(request) {
       }
       const modelId = bestModel.id;
       console.log(`[ETAPA 3/5] Modelo de excelência selecionado: ${modelId}.`);
-      // --- FIM DA LÓGICA MELHORADA ---
 
-      // CHAMA A API DA GROQ
       console.log(
         `[ETAPA 4/5] A enviar prompt para o modelo da Groq: ${modelId}...`
       );
@@ -165,13 +154,9 @@ export async function POST(request) {
         model: modelId,
       });
 
-      // CÓDIGO CORRIGIDO (DEPOIS DA MUDANÇA)
-
-      // 1. Pega a resposta BRUTA da IA
       const respostaBrutaDaIa =
         chatCompletion.choices[0]?.message?.content || "";
 
-      // 2. LIMPA a resposta para remover o bloco <think>
       analysisResult = respostaBrutaDaIa
         .replace(/<think>[\s\S]*?<\/think>/, "")
         .trim();
@@ -185,7 +170,6 @@ export async function POST(request) {
       );
     }
 
-    // 3. MONTAR O RELATÓRIO FINAL (Sua lógica original)
     console.log(
       "\n[ETAPA 5/5] A montar o relatório final para enviar ao frontend..."
     );
@@ -256,7 +240,7 @@ export async function POST(request) {
             (audits["server-response-time"]?.numericValue / 1000)?.toFixed(2)
           ) || 0,
       },
-      geminiAnalysis: analysisResult, // A análise agora vem da Groq
+      geminiAnalysis: analysisResult,
       actionPlan: [],
       opportunities,
       diagnostics,

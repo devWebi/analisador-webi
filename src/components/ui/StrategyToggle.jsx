@@ -11,7 +11,6 @@ const StrategyToggle = ({ strategy, setStrategy }) => {
         }}
       />
 
-      {/* Os botões ficam por cima do fundo. */}
       <button
         onClick={() => setStrategy("mobile")}
         className="relative z-10 flex-1 px-4 py-2 rounded-lg font-semibold transition-colors duration-300 focus:outline-none"

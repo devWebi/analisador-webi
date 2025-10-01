@@ -69,8 +69,6 @@ const RdStationForm = ({ formId, onConversion }) => {
       );
     };
   }, [onConversion]);
-
-  // A div que o RD Station usa para renderizar o formulário.
   return <div role="main" id={formId}></div>;
 };
 

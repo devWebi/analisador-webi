@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-// Os componentes de ícone foram definidos aqui.
 const SearchIcon = ({ className = "w-6 h-6" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +94,6 @@ const LeadGenModal = ({ onClose, onAnalyze, isLoading, strategy }) => {
     });
 
     try {
-      // Futuramente, esta chamada será para a nossa API /api/save-lead
       const response = await fetch("/api/save-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

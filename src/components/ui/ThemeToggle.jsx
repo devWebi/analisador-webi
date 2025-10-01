@@ -1,5 +1,4 @@
 import React from "react";
-// Importamos os ícones que acabámos de criar no ficheiro vizinho.
 import { SunIcon, MoonIcon } from "./Icons";
 
 const ThemeToggle = ({ theme, toggleTheme }) => (

@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangleIcon } from "./Icons"; // Usamos um ícone para dar destaque
+import { AlertTriangleIcon } from "./Icons";
 
 /**
  * Um componente para exibir um único problema de acessibilidade.

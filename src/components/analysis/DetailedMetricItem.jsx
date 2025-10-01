@@ -1,9 +1,7 @@
 import React from "react";
 import { CheckCircleIcon, AlertTriangleIcon, XCircleIcon } from "../ui/Icons";
 
-// Um novo componente para exibir cada linha do nosso relatório detalhado.
 const DetailedMetricItem = ({ status, label, value, explanation }) => {
-  // Mapeamento para escolher o ícone e a cor do texto com base no estado (status)
   const statusConfig = {
     good: { icon: <CheckCircleIcon />, color: "text-emerald-400" },
     warning: { icon: <AlertTriangleIcon />, color: "text-amber-400" },

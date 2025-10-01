@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// PASSO 1: Importar os ícones do novo ficheiro
 import {
   PaintBrushIcon,
   TimerIcon,
@@ -7,9 +6,8 @@ import {
   ZapIcon,
   ServerIcon,
   LayersIcon,
-} from "../ui/Icons"; // Ajuste o caminho se necessário
+} from "../ui/Icons";
 
-// Função para converter o tempo em segundos para uma nota (A-F)
 const getMetricGrade = (value, thresholds) => {
   if (value <= thresholds.good)
     return { grade: "A", color: "bg-green-500/80 border-green-500/90" };
@@ -18,7 +16,6 @@ const getMetricGrade = (value, thresholds) => {
   return { grade: "F", color: "bg-red-500/80 border-red-500/90" };
 };
 
-// Componente para um único item do painel
 const SummaryItem = ({
   icon,
   label,
@@ -40,7 +37,7 @@ const SummaryItem = ({
     }
 
     let startTime;
-    const animationDuration = 1200; // Duração base da animação
+    const animationDuration = 1500; // Duração da animação em ms
 
     const animateValue = (timestamp) => {
       if (!startTime) startTime = timestamp;
@@ -51,7 +48,6 @@ const SummaryItem = ({
 
       const currentValue = startValue + easedProgress * (endValue - startValue);
 
-      // O CLS tem valores pequenos, então precisa de mais precisão
       const decimalPlaces = unit === "" ? 3 : 2;
       setDisplayValue(currentValue.toFixed(decimalPlaces));
 
@@ -62,7 +58,6 @@ const SummaryItem = ({
       }
     };
 
-    // Aplica o atraso escalonado
     const timer = setTimeout(() => {
       requestAnimationFrame(animateValue);
     }, delay * 100);
@@ -101,11 +96,8 @@ const SummaryItem = ({
   );
 };
 
-// O painel principal que agrupa todos os itens
 const PerformanceSummary = ({ metrics }) => {
   if (!metrics) return null;
-
-  // Enriquecemos os dados das métricas com ícones e descrições para os tooltips
   const metricDetails = [
     {
       key: "fcp",
@@ -175,7 +167,6 @@ const PerformanceSummary = ({ metrics }) => {
         Performance em Detalhe
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* CORREÇÃO APLICADA AQUI */}
         {metricDetails.map(({ key, ...restOfMetric }, index) => (
           <SummaryItem key={key} {...restOfMetric} delay={index} />
         ))}

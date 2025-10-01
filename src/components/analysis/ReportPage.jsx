@@ -1,17 +1,10 @@
 import React, { useState } from "react";
-
 import ScoreGauge from "./ScoreGauge";
-
 import ActionPlan from "./ActionPlan";
-
 import OpportunityItem from "./OpportunityItem";
-
 import PerformanceSummary from "./PerformanceSummary";
-
 import { DownloadIcon } from "../ui/Icons";
-
 import ReactMarkdown from "react-markdown";
-
 import remarkGfm from "remark-gfm";
 
 const handlePrint = () => {
@@ -110,8 +103,6 @@ const AccordionSection = ({ title, count, children, defaultOpen = false }) => {
 const ReportPage = ({ data, onReset, onNavigateToUiUx }) => {
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-      {/* 2. O header será visível na impressão por padrão, mas adicionamos 'print:block' para garantir. */}
-
       <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 print:block">
         <div className="flex items-center gap-4 w-full md:w-auto">
           <img

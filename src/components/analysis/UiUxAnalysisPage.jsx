@@ -12,7 +12,6 @@ import {
   DownloadIcon,
 } from "@/components/ui/Icons";
 
-// --- Os componentes internos (SeverityBadge, OverallScore, etc.) permanecem os mesmos ---
 const SeverityBadge = ({ severity }) => {
   const severityMap = {
     Crítico: "bg-red-500/20 text-red-400 border-red-500/30",
@@ -129,7 +128,7 @@ const UiUxAnalysisPage = ({
     onAnalyze(url);
   };
 
-  // --- 1. FUNÇÃO PARA AUTO-CORRIGIR A URL ADICIONADA ---
+  // --- FUNÇÃO PARA AUTO-CORRIGIR A URL ADICIONADA ---
   const handleUrlBlur = () => {
     if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
       setUrl(`https://${url}`);
@@ -157,7 +156,6 @@ const UiUxAnalysisPage = ({
 
     return (
       <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 z-10 animate-fade-in-fast">
-        {/* --- 2. CABEÇALHO COM RESPONSIVIDADE CORRIGIDA --- */}
         <header className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 no-print">
           <div className="flex items-center gap-4 w-full md:w-auto">
             <img
@@ -317,8 +315,8 @@ const UiUxAnalysisPage = ({
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            onBlur={handleUrlBlur} // A função de auto-correção é chamada aqui
-            placeholder="exemplo.com.br" // Placeholder atualizado
+            onBlur={handleUrlBlur}
+            placeholder="exemplo.com.br"
             className="w-full pl-12 pr-4 py-4 text-lg bg-[var(--input-bg)] text-[var(--text-primary)] border-2 border-transparent focus:border-[var(--accent-color)] focus:outline-none rounded-xl transition-all duration-300"
           />
         </div>

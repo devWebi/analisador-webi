@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import StrategyToggle from "../ui/StrategyToggle";
-import LeadGenModal from "../ui/LeadGenModal"; // Importamos o nosso novo modal
+import LeadGenModal from "../ui/LeadGenModal";
 
 const HomePage = ({ onAnalyze, isLoading, strategy, setStrategy }) => {
-  // Novo estado para controlar a visibilidade do modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -33,7 +31,6 @@ const HomePage = ({ onAnalyze, isLoading, strategy, setStrategy }) => {
           para elevar seu projeto.
         </p>
 
-        {/* O formulário foi substituído por um único botão CTA */}
         <div className="mt-10">
           <button
             onClick={() => setIsModalOpen(true)}
@@ -44,7 +41,6 @@ const HomePage = ({ onAnalyze, isLoading, strategy, setStrategy }) => {
         </div>
       </div>
 
-      {/* O modal é renderizado aqui, mas só aparece quando isModalOpen for true */}
       {isModalOpen && (
         <LeadGenModal
           onClose={() => setIsModalOpen(false)}

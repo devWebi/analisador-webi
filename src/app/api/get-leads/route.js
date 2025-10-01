@@ -9,12 +9,10 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-// Carrega a configuração do Firebase
 const firebaseConfig = JSON.parse(
   process.env.NEXT_PUBLIC_FIREBASE_CONFIG || "{}"
 );
 
-// Inicializa o Firebase
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
@@ -25,11 +23,10 @@ if (!getApps().length) {
 const db = getFirestore(app);
 
 export async function GET(request) {
-  // Extrai os parâmetros de busca da URL (ex: /api/get-leads?role=Estudante&sortBy=createdAt)
   const { searchParams } = new URL(request.url);
   const role = searchParams.get("role");
-  const sortBy = searchParams.get("sortBy") || "createdAt"; // Ordenação padrão por data
-  const sortOrder = searchParams.get("sortOrder") || "desc"; // Ordem padrão descendente
+  const sortBy = searchParams.get("sortBy") || "createdAt";
+  const sortOrder = searchParams.get("sortOrder") || "desc";
 
   console.log(
     `▶️ A executar consulta: Filtrar por role='${
@@ -39,18 +36,11 @@ export async function GET(request) {
 
   try {
     const leadsCollection = collection(db, "leads");
-
-    // Constrói a consulta dinamicamente
     const queryConstraints = [];
-
-    // Adiciona o filtro de 'role', se ele for fornecido na URL
     if (role) {
       queryConstraints.push(where("role", "==", role));
     }
 
-    // Adiciona a ordenação
-    // O Firestore exige que o primeiro orderBy seja no mesmo campo de uma cláusula 'where' de desigualdade (não é o nosso caso)
-    // Se estivermos a filtrar por 'role', podemos precisar de um índice composto para ordenar por outro campo.
     queryConstraints.push(orderBy(sortBy, sortOrder));
 
     // Monta a consulta final
